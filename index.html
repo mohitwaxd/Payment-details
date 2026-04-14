@@ -38,17 +38,33 @@
     label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
     .req { color: var(--danger); font-size: 13px; }
     .badge-prefill { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: #7A5C00; background: #FFF3C4; padding: 2px 6px; border-radius: 4px; }
-    input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+    
+    input[type="text"], input[type="email"], input[type="tel"], select { width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+    
+    select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B6860' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+    
+    select:disabled { background-color: #F8F7F4; color: var(--text-hint); cursor: not-allowed; }
+    
     input::placeholder { color: var(--text-hint); font-size: 13px; }
-    input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(58,111,247,0.1); }
+    input:focus, select:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(58,111,247,0.1); }
+    
     input.prefilled { background: var(--prefill-bg); border-color: var(--prefill-border); color: var(--prefill-text); font-family: 'DM Mono', monospace; font-size: 13px; }
     input.prefilled:focus { border-color: var(--border-focus); background: var(--surface); color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 14px; }
-    input.error { border-color: var(--danger); background: var(--danger-light); }
+    input.error, select.error { border-color: var(--danger); background: var(--danger-light); }
+    
     .error-msg { font-size: 11.5px; color: var(--danger); display: none; } .error-msg.show { display: block; }
+    
+    .loading-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #E2E0D8; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .enterprise-loader { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+    
     .info-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #F0C842; border-radius: var(--radius-sm); font-size: 12px; color: #7A5C00; line-height: 1.5; margin-bottom: 1.25rem; }
     .info-note svg { flex-shrink: 0; margin-top: 1px; }
+    
     .config-banner { background: #FFF8E1; border: 1px solid #FFD54F; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 1.25rem; font-size: 12.5px; color: #5D4037; display: none; gap: 8px; align-items: flex-start; line-height: 1.6; }
     .config-banner a { color: var(--accent); }
+    
     .file-zone { border: 1.5px dashed var(--border); border-radius: var(--radius-sm); padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface-2); position: relative; }
     .file-zone:hover, .file-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
     .file-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -61,24 +77,46 @@
     .file-selected span { font-size: 13px; color: var(--success); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .file-selected button { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-hint); padding: 2px; display: flex; align-items: center; }
     .file-selected button:hover { color: var(--danger); }
+    
+    .file-preview-container { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+    .file-preview-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    
+    #image-preview-wrapper img { cursor: default; transition: none; }
+    
+    @media (max-width: 520px) {
+      #image-preview-wrapper { max-height: 250px; }
+      #image-preview { max-height: 250px !important; }
+    }
+    
     .checks-grid { display: flex; flex-direction: column; gap: 8px; }
     .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; background: var(--surface-2); user-select: none; }
     .check-item:hover { border-color: var(--accent); background: var(--accent-light); }
     .check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); margin-top: 2px; cursor: pointer; flex-shrink: 0; }
     .check-item:has(input:checked) { border-color: #A0B4F8; background: var(--accent-light); }
     .check-text { flex: 1; } .check-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; } .check-desc { font-size: 12px; color: var(--text-hint); line-height: 1.5; }
+    
     .form-footer { padding: 1.25rem 1.75rem; border-top: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; gap: 10px; }
     .btn-reset { padding: 9px 18px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text-secondary); background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
     .btn-reset:hover { border-color: var(--text-hint); color: var(--text-primary); }
     .btn-submit { flex: 1; padding: 10px 18px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-submit:hover { background: #2558E0; } .btn-submit:active { transform: scale(0.98); } .btn-submit:disabled { background: #A0B4F8; cursor: not-allowed; transform: none; }
+    
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    
     .success-banner { display: none; margin: 0 1.75rem 1.25rem; padding: 14px 16px; background: var(--success-light); border: 1px solid #A8DFC4; border-radius: var(--radius-sm); font-size: 14px; color: var(--success); font-weight: 500; align-items: center; gap: 10px; }
     .success-banner.show { display: flex; }
     .error-banner { display: none; margin: 0 1.75rem 1.25rem; padding: 14px 16px; background: var(--danger-light); border: 1px solid #F5BBBB; border-radius: var(--radius-sm); font-size: 13px; color: var(--danger); align-items: flex-start; gap: 10px; }
     .error-banner.show { display: flex; }
-    @media (max-width: 520px) { body { padding: 1rem 0.75rem 2rem; } .section { padding: 1.25rem; } .grid-2 { grid-template-columns: 1fr; } .form-footer { flex-wrap: wrap; } .form-footer .btn-reset { flex: 1; } .header h1 { font-size: 20px; } .success-banner, .error-banner { margin: 0 1.25rem 1rem; } }
+    
+    @media (max-width: 520px) { 
+      body { padding: 1rem 0.75rem 2rem; } 
+      .section { padding: 1.25rem; } 
+      .grid-2 { grid-template-columns: 1fr; } 
+      .form-footer { flex-wrap: wrap; } 
+      .form-footer .btn-reset { flex: 1; } 
+      .header h1 { font-size: 20px; } 
+      .success-banner, .error-banner { margin: 0 1.25rem 1rem; } 
+    }
   </style>
 </head>
 <body>
@@ -88,14 +126,12 @@
       <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0L7.5 4.5H12L8.5 7L10 11.5L6 9L2 11.5L3.5 7L0 4.5H4.5L6 0Z"/></svg>
       Payment Request
     </div>
-    <h1>Submit Payment Details</h1>
-    <p>Pre-filled fields are editable — click any field to update before submitting.</p>
+    <h1>Submit Order Details</h1>
   </div>
 
-  <!-- shown only if Apps Script URL is missing -->
   <div class="config-banner" id="config-banner">
     <svg width="15" height="15" viewBox="0 0 16 16" fill="#B07A00" style="flex-shrink:0;margin-top:2px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a1 1 0 110 2 1 1 0 010-2zm-1 4h2v5H7V7z"/></svg>
-    <span>Google Sheets not connected. Replace <code style="background:#FFE082;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px">PASTE_YOUR_APPS_SCRIPT_URL_HERE</code> in the HTML with your Web App URL.</span>
+    <span>Configuration needed. Replace <code style="background:#FFE082;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px">YOUR_API_KEY</code> and <code style="background:#FFE082;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px">APPS_SCRIPT_URL</code> in the script.</span>
   </div>
 
   <div class="card">
@@ -108,20 +144,23 @@
         <div><div class="section-title">Business information</div><div class="section-sub">Enterprise & product details</div></div>
       </div>
       <div class="grid-2">
-        <div class="field">
-          <label for="enterprise">Enterprise name <span class="req">*</span></label>
-          <input type="text" id="enterprise" placeholder="e.g. Acme Pvt. Ltd.">
-          <span class="error-msg" id="err-enterprise">Please enter enterprise name</span>
-        </div>
-        <div class="field">
-          <label for="discount">Discount</label>
-          <input type="text" id="discount" placeholder="e.g. 10% or ₹500">
-        </div>
         <div class="field full">
-          <label for="product">Product and quantity <span class="req">*</span></label>
-          <input type="text" id="product" placeholder="e.g. Pro Plan × 5 seats">
-          <span class="error-msg" id="err-product">Please enter product and quantity</span>
+          <label for="enterprise">Enterprise name <span class="req">*</span></label>
+          <div style="position: relative;">
+            <input type="text" id="enterprise" placeholder="Type to search or select enterprise" autocomplete="off" style="padding-right: 36px;">
+            <div id="enterprise-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1.5px solid var(--border-focus); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <!-- Options populated by JavaScript -->
+            </div>
+            <div class="enterprise-loader" id="enterprise-loader" style="display:none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);">
+              <div class="loading-spinner" style="width: 12px; height: 12px;"></div>
+            </div>
+            <svg id="enterprise-dropdown-icon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <small style="display: block; margin-top: 6px; color: var(--text-hint); font-size: 11px;">Type to search or select from list</small>
+          <span class="error-msg" id="err-enterprise">Please select or enter enterprise name</span>
         </div>
+        <!-- Hidden field to store enterprise ID -->
+        <input type="hidden" id="enterprise-id" value="">
       </div>
     </div>
 
@@ -137,16 +176,22 @@
       <div class="grid-2">
         <div class="field">
           <label for="email">Email ID <span class="req">*</span>
-            <span class="badge-prefill" id="badge-email" style="display:none">✎ pre-filled</span>
           </label>
           <input type="email" id="email" placeholder="you@company.com">
           <span class="error-msg" id="err-email">Please enter a valid email</span>
         </div>
         <div class="field">
           <label for="phone">Phone
-            <span class="badge-prefill" id="badge-phone" style="display:none">✎ pre-filled</span>
           </label>
-          <input type="tel" id="phone" placeholder="+91 98765 43210">
+          <input type="tel" id="phone" placeholder="+91 925820 XXXX">
+        </div>
+        <div class="field full">
+          <label for="gstNumber">GST Number</label>
+          <input type="text" id="gstNumber" placeholder="e.g. 27AABCU9603R1Z5">
+        </div>
+        <div class="field full">
+          <label for="address">Address</label>
+          <textarea id="address" placeholder="Enter complete address..." style="width: 100%; min-height: 60px; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical;"></textarea>
         </div>
       </div>
     </div>
@@ -169,25 +214,121 @@
           <p><strong>Click to upload</strong> or drag & drop</p>
           <small>PNG, JPG, WEBP, PDF — max 10 MB</small>
         </div>
-        <div class="file-selected" id="file-selected">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg>
-          <span id="file-label"></span>
-          <button type="button" onclick="removeFile()">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm2.854 4.146a.5.5 0 010 .708L8.707 8l2.147 2.146a.5.5 0 01-.708.708L8 8.707l-2.146 2.147a.5.5 0 01-.708-.708L7.293 8 5.146 5.854a.5.5 0 01.708-.708L8 7.293l2.146-2.147a.5.5 0 01.708 0z"/></svg>
-          </button>
+        
+        <!-- File Preview Section -->
+        <div class="file-preview-container" id="file-preview-container" style="display: none; margin-top: 12px;">
+          <div class="file-preview-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="color: var(--success);">
+                <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/>
+              </svg>
+              <span id="file-name-display" style="font-weight: 500; color: var(--text-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+              <span id="file-size-display" style="font-size: 11px; color: var(--text-hint);"></span>
+              <button type="button" onclick="removeFile()" style="background: none; border: none; cursor: pointer; color: var(--text-hint); padding: 4px; display: flex; align-items: center; transition: color 0.2s;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="color: var(--danger);">
+                  <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm2.854 4.146a.5.5 0 010 .708L8.707 8l2.147 2.146a.5.5 0 01-.708.708L8 8.707l-2.146 2.147a.5.5 0 01-.708-.708L7.293 8 5.146 5.854a.5.5 0 01.708-.708L8 7.293l2.146-2.147a.5.5 0 01.708 0z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Image Preview -->
+          <div id="image-preview-wrapper" style="display: none; margin-top: 12px;">
+            <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
+              <div style="max-height: 300px; overflow: auto; display: flex; align-items: center; justify-content: center; background: #fafaf9;">
+                <img id="image-preview" src="" alt="Preview" style="max-width: 100%; max-height: 300px; object-fit: contain; padding: 12px;">
+              </div>
+              <div style="padding: 8px 12px; background: var(--surface-2); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-hint);">
+                Image preview
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Preview -->
+          <div id="pdf-preview-wrapper" style="display: none; margin-top: 12px;">
+            <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center;">
+              <div style="width: 48px; height: 64px; background: #DC2626; border-radius: 4px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
+                  <polyline points="13 2 13 9 20 9"></polyline>
+                  <text x="12" y="16" font-size="10" fill="white" text-anchor="middle">PDF</text>
+                </svg>
+              </div>
+              <p style="margin: 0 0 4px; font-weight: 500; color: var(--text-primary); font-size: 13px;" id="pdf-file-name"></p>
+              <p style="margin: 0; color: var(--text-hint); font-size: 11px;">PDF Document</p>
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                <a id="pdf-download-link" href="#" download style="font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500;">
+                  Download PDF
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Upload Info -->
+          <div style="display: flex; gap: 8px; margin-top: 10px; padding: 10px 12px; background: var(--accent-light); border: 1px solid var(--border-focus); border-radius: var(--radius-sm); font-size: 11px; color: var(--accent);">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink: 0; margin-top: 1px;">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 11a1 1 0 110-2 1 1 0 010 2zm0-8a1 1 0 110 2 1 1 0 010-2z"/>
+            </svg>
+            <span>File ready for submission. You can upload a different file anytime.</span>
+          </div>
         </div>
+
         <span class="error-msg" id="err-file">Please upload a payment screenshot</span>
       </div>
-      <div class="checks-grid">
-        <label class="check-item"><input type="checkbox" id="tds"><div class="check-text"><div class="check-title">TDS amount deducted</div><div class="check-desc">Tax Deducted at Source has been applied to this payment</div></div></label>
-        <label class="check-item"><input type="checkbox" id="gst"><div class="check-text"><div class="check-title">GST pending amount</div><div class="check-desc">Goods & Services Tax amount is pending for this transaction</div></div></label>
-        <label class="check-item"><input type="checkbox" id="taxinv"><div class="check-text"><div class="check-title">Tax invoice before payment</div><div class="check-desc">Requesting tax invoice to be issued prior to payment processing</div></div></label>
+
+      <!-- GST Details - REMOVED, moved to Contact Info -->
+
+      <!-- Order Amount -->
+      <div class="field full" style="margin-bottom: 16px;">
+        <label for="orderAmount" style="display: block; margin-bottom: 8px;">Order Amount <span class="req">*</span></label>
+        <input type="text" id="orderAmount" placeholder="e.g. ₹5,000 or 5000" style="width: 100%; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s;">
+        <span class="error-msg" id="err-orderAmount">Please enter order amount</span>
+      </div>
+
+      <!-- Order Note -->
+      <div class="field full" style="margin-bottom: 24px;">
+        <label for="orderNote" style="display: block; margin-bottom: 8px;">Order Note <span class="req">*</span></label>
+        <textarea id="orderNote" placeholder="Add any additional notes or details..." style="width: 100%; min-height: 100px; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical; line-height: 1.5;"></textarea>
+        <span class="error-msg" id="err-orderNote">Please enter order note</span>
+      </div>
+
+      <!-- Dynamic Amount Fields for Checkboxes -->
+      <div class="checks-grid" style="margin-top: 14px;">
+        <!-- Checkbox 1: TDS -->
+        <label class="check-item" style="flex-direction: column; align-items: flex-start;">
+          <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
+            <input type="checkbox" id="tdsAmount" onchange="toggleAmountField('tds')">
+            <div class="check-text">
+              <div class="check-title">TDS amount deducted</div>
+              <div class="check-desc">Tax Deducted at Source has been applied to this payment</div>
+            </div>
+          </div>
+          <!-- Dynamic Amount Field for TDS -->
+          <div id="tds-amount-wrapper" style="display: none; width: 100%; margin-top: 10px; padding-left: 28px;">
+            <input type="text" id="tdsAmountValue" placeholder="Enter TDS amount" style="width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none;">
+          </div>
+        </label>
+
+        <!-- Checkbox 2: GST Pending -->
+        <label class="check-item" style="flex-direction: column; align-items: flex-start;">
+          <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
+            <input type="checkbox" id="gstPendingAmount" onchange="toggleAmountField('gst')">
+            <div class="check-text">
+              <div class="check-title">GST pending amount</div>
+              <div class="check-desc">Goods & Services Tax amount is pending for this transaction</div>
+            </div>
+          </div>
+          <!-- Dynamic Amount Field for GST -->
+          <div id="gst-amount-wrapper" style="display: none; width: 100%; margin-top: 10px; padding-left: 28px;">
+            <input type="text" id="gstPendingAmountValue" placeholder="Enter GST pending amount" style="width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none;">
+          </div>
+        </label>
       </div>
     </div>
 
     <div class="success-banner" id="success-banner">
       <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg>
-      <div><strong>Submitted!</strong> Your payment request has been saved .</div>
+      <div><strong>Submitted!</strong> Your payment request has been saved.</div>
     </div>
     <div class="error-banner" id="error-banner">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;margin-top:1px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4h1.5l-.25 4.5h-1L7.25 5zM8 11.5a.75.75 0 110-1.5.75.75 0 010 1.5z"/></svg>
@@ -207,29 +348,181 @@
 </div>
 
 <script>
-  /* ══ CONFIGURE: paste your Apps Script Web App URL below ══ */
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuBKqTqKK9JdabdWeq9KrTzwWVxmngBZENrqmvSgxnebq5d_18ur_He4dIJLdmDlaU/exec';
-  /* ════════════════════════════════════════════════════════ */
+  /* ══ CONFIGURATION ══ */
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl39O3BgWyqYbQ1wLRGAZcpXQAesLsO8T8-RoWizYFqpKKhUmJ-JDwy2cKDwnYxzMj/exec';
+  const TELECRM_API_BASE = 'https://next.telecrm.in/api/b1/enterprise';
+  const API_KEY = 'Bearerserverapi a7b3c9d2e4f6g8h0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4'; // ⚠️ REPLACE WITH YOUR KEY
+  /* ═════════════════ */
 
-  /* ── FIX 1: only show config banner if URL is still a placeholder ── */
+  let enterprisesData = [];
+  let allEnterprises = [];
+
   window.addEventListener('DOMContentLoaded', () => {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
       document.getElementById('config-banner').style.display = 'flex';
     }
+    checkForConfig();
+    setupEnterpriseSearch();
+    setupGstAutoFetch();
     prefill();
   });
 
-  /* ── FIX 2: prefill runs cleanly with no interference ── */
+  function checkForConfig() {
+    if (!API_KEY || API_KEY.includes('YOUR_API_KEY')) {
+      document.getElementById('config-banner').style.display = 'flex';
+    }
+  }
+
+  /* ── Searchable Dropdown Setup ── */
+  function setupEnterpriseSearch() {
+    const input = document.getElementById('enterprise');
+    const dropdown = document.getElementById('enterprise-dropdown');
+
+    // Show dropdown on focus
+    input.addEventListener('focus', () => {
+      if (allEnterprises.length > 0) {
+        showEnterpriseDropdown();
+      }
+    });
+
+    // Filter as user types
+    input.addEventListener('input', (e) => {
+      const value = e.target.value.toLowerCase();
+      filterEnterpriseDropdown(value);
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('[style*="position: relative"]') && e.target !== input) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // Load enterprises from API if available
+    loadEnterprises();
+  }
+
+  async function loadEnterprises() {
+    const q = new URLSearchParams(window.location.search);
+    const enterpriseParam = q.get('enterpriseids');
+    
+    if (!enterpriseParam) return;
+
+    const enterpriseIds = enterpriseParam.split(',').map(id => id.trim()).filter(Boolean);
+    if (enterpriseIds.length === 0) return;
+
+    const loader = document.getElementById('enterprise-loader');
+    loader.style.display = 'flex';
+
+    try {
+      const promises = enterpriseIds.map(id => fetchEnterprise(id));
+      const results = await Promise.all(promises);
+      
+      allEnterprises = results
+        .filter(data => data && data.id)
+        .map(data => ({ id: data.id, name: data.name }));
+
+      if (allEnterprises.length > 0) {
+        renderEnterpriseDropdown();
+        if (allEnterprises.length === 1) {
+          selectEnterprise(allEnterprises[0].name, allEnterprises[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading enterprises:', err);
+    } finally {
+      loader.style.display = 'none';
+    }
+  }
+
+  async function fetchEnterprise(id) {
+    try {
+      const response = await fetch(`${TELECRM_API_BASE}/${id}`, {
+        method: 'GET',
+        headers: { 'authorization': API_KEY }
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      console.error(`Failed to fetch enterprise ${id}:`, err);
+      return null;
+    }
+  }
+
+  function renderEnterpriseDropdown() {
+    const dropdown = document.getElementById('enterprise-dropdown');
+    dropdown.innerHTML = allEnterprises
+      .map(enterprise => `
+        <div style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s;" 
+             onmouseover="this.style.background='var(--accent-light)'" 
+             onmouseout="this.style.background='transparent'"
+             onclick="selectEnterprise('${enterprise.name.replace(/'/g, "\\'")}', '${enterprise.id.replace(/'/g, "\\'")}')">
+          ${enterprise.name}
+        </div>
+      `)
+      .join('');
+  }
+
+  function showEnterpriseDropdown() {
+    const dropdown = document.getElementById('enterprise-dropdown');
+    dropdown.style.display = 'block';
+  }
+
+  function filterEnterpriseDropdown(searchValue) {
+    const dropdown = document.getElementById('enterprise-dropdown');
+    
+    if (searchValue === '' && allEnterprises.length > 0) {
+      renderEnterpriseDropdown();
+      dropdown.style.display = 'block';
+      return;
+    }
+
+    const filtered = allEnterprises.filter(e => 
+      e.name.toLowerCase().includes(searchValue)
+    );
+
+    if (filtered.length === 0) {
+      dropdown.innerHTML = '<div style="padding: 12px; text-align: center; color: var(--text-hint); font-size: 12px;">No matches found</div>';
+    } else {
+      dropdown.innerHTML = filtered
+        .map(enterprise => `
+          <div style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s;" 
+               onmouseover="this.style.background='var(--accent-light)'" 
+               onmouseout="this.style.background='transparent'"
+               onclick="selectEnterprise('${enterprise.name.replace(/'/g, "\\'")}', '${enterprise.id.replace(/'/g, "\\'")}')">
+            ${enterprise.name}
+          </div>
+        `)
+        .join('');
+    }
+
+    dropdown.style.display = 'block';
+  }
+
+  function selectEnterprise(name, id) {
+    const input = document.getElementById('enterprise');
+    const dropdown = document.getElementById('enterprise-dropdown');
+    const idField = document.getElementById('enterprise-id');
+    input.value = name;
+    if (idField) idField.value = id || '';  // Store enterprise ID
+    dropdown.style.display = 'none';
+    input.focus();
+  }
+
+  /* ── Original Prefill Logic ── */
   function prefill() {
     const q = new URLSearchParams(window.location.search);
     const get = (...keys) => keys.map(k => q.get(k)).find(Boolean) || '';
+    
     const map = {
-      enterprise: get('enterprise', 'company', 'org'),
-      product:    get('product', 'item', 'products'),
       email:      get('email', 'mail'),
       phone:      get('phone', 'mobile', 'tel'),
-      discount:   get('discount', 'disc')
+      gstNumber:  get('gstNumber', 'gst', 'gstin'),
+      address:    get('address', 'addr', 'location'),
+      orderAmount: get('orderAmount', 'amount', 'total'),
+      orderNote:  get('orderNote', 'note', 'notes')
     };
+    
     let hasContact = false;
     Object.entries(map).forEach(([id, val]) => {
       if (!val) return;
@@ -237,14 +530,22 @@
       if (!el) return;
       el.value = val;
       el.classList.add('prefilled');
-      /* yellow highlight removed on first focus so user sees it changed */
       el.addEventListener('focus', () => el.classList.remove('prefilled'), { once: true });
       if (id === 'email' || id === 'phone') {
-        document.getElementById('badge-' + id).style.display = 'inline-flex';
+        const badge = document.getElementById('badge-' + id);
+        if (badge) badge.style.display = 'inline-flex';
         hasContact = true;
       }
     });
-    if (hasContact) document.getElementById('prefill-note').style.display = 'flex';
+
+    // If GST is provided in query params and address is not, fetch address from GST API.
+    const gstFromQuery = map.gstNumber ? map.gstNumber.trim().toUpperCase() : '';
+    if (gstFromQuery && gstFromQuery.length >= 10 && !map.address) {
+      fetchGstDetails(gstFromQuery);
+    }
+
+    // Load enterprises last
+    loadEnterprises();
   }
 
   /* File upload */
@@ -258,76 +559,246 @@
     const f = e.dataTransfer.files[0];
     if (f) { const dt = new DataTransfer(); dt.items.add(f); fileInput.files = dt.files; showFile(f); }
   });
+
   function showFile(file) {
-    document.getElementById('file-label').textContent = file.name;
-    document.getElementById('file-selected').classList.add('show');
+    const container = document.getElementById('file-preview-container');
+    const dropZone = document.getElementById('drop-zone');
+    const imagePreviewWrapper = document.getElementById('image-preview-wrapper');
+    const pdfPreviewWrapper = document.getElementById('pdf-preview-wrapper');
+    const imagePreview = document.getElementById('image-preview');
+    const pdfFileName = document.getElementById('pdf-file-name');
+    const pdfDownloadLink = document.getElementById('pdf-download-link');
+
+    // Show file info
+    document.getElementById('file-name-display').textContent = file.name;
+    document.getElementById('file-size-display').textContent = formatFileSize(file.size);
+
+    // Hide upload zone, show preview container
     dropZone.style.display = 'none';
+    container.style.display = 'block';
+    imagePreviewWrapper.style.display = 'none';
+    pdfPreviewWrapper.style.display = 'none';
+
+    // Clear error
     document.getElementById('err-file').classList.remove('show');
-  }
-  function removeFile() {
-    fileInput.value = '';
-    document.getElementById('file-selected').classList.remove('show');
-    dropZone.style.display = '';
+
+    // Handle different file types
+    if (file.type.startsWith('image/')) {
+      // Image preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        imagePreviewWrapper.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type === 'application/pdf') {
+      // PDF preview
+      pdfFileName.textContent = file.name;
+      const fileUrl = URL.createObjectURL(file);
+      pdfDownloadLink.href = fileUrl;
+      pdfPreviewWrapper.style.display = 'block';
+    }
   }
 
-  /* Validation */
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  function removeFile() {
+    const dropZone = document.getElementById('drop-zone');
+    const container = document.getElementById('file-preview-container');
+    
+    fileInput.value = '';
+    container.style.display = 'none';
+    dropZone.style.display = '';
+    document.getElementById('image-preview-wrapper').style.display = 'none';
+    document.getElementById('pdf-preview-wrapper').style.display = 'none';
+  }
+
+  /* ── Toggle Dynamic Amount Fields ── */
+  function toggleAmountField(type) {
+    if (type === 'tds') {
+      const checkbox = document.getElementById('tdsAmount');
+      const wrapper = document.getElementById('tds-amount-wrapper');
+      wrapper.style.display = checkbox.checked ? 'block' : 'none';
+      if (!checkbox.checked) {
+        document.getElementById('tdsAmountValue').value = '';
+      }
+    } else if (type === 'gst') {
+      const checkbox = document.getElementById('gstPendingAmount');
+      const wrapper = document.getElementById('gst-amount-wrapper');
+      wrapper.style.display = checkbox.checked ? 'block' : 'none';
+      if (!checkbox.checked) {
+        document.getElementById('gstPendingAmountValue').value = '';
+      }
+    }
+  }
+
+  /* ── GST Auto-Fetch Functionality ── */
+  function setupGstAutoFetch() {
+    const gstNumberInput = document.getElementById('gstNumber');
+    
+    gstNumberInput.addEventListener('blur', async () => {
+      const gstNumber = gstNumberInput.value.trim().toUpperCase();
+      
+      // Only fetch if GST number is provided and has valid format
+      if (!gstNumber || gstNumber.length < 10) {
+        return;
+      }
+      
+      await fetchGstDetails(gstNumber);
+    });
+  }
+
+  async function fetchGstDetails(gstNumber) {
+    const apiUrl = `http://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc/${gstNumber}`;
+    
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      if (data.flag && data.data) {
+        // Populate address from API response
+        const pradr = data.data.pradr;
+        if (pradr && pradr.adr) {
+          document.getElementById('address').value = pradr.adr;
+          document.getElementById('address').classList.add('prefilled');
+        }
+      } else {
+        console.warn('GST not found or API error:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching GST details:', error);
+    }
+  }
   function validate() {
     let ok = true;
-    [{ id:'enterprise' }, { id:'product' }, { id:'email', test: v => /\S+@\S+\.\S+/.test(v) }].forEach(({ id, test }) => {
-      const el = document.getElementById(id), err = document.getElementById('err-' + id);
-      const pass = test ? test(el.value.trim()) : el.value.trim();
-      if (!pass) { el.classList.add('error'); err.classList.add('show'); ok = false; }
-      else { el.classList.remove('error'); err.classList.remove('show'); }
-    });
-    if (!fileInput.files.length) { document.getElementById('err-file').classList.add('show'); ok = false; }
+    
+    const enterprise = document.getElementById('enterprise').value.trim();
+    
+    if (!enterprise) {
+      document.getElementById('enterprise').classList.add('error');
+      document.getElementById('err-enterprise').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('enterprise').classList.remove('error');
+      document.getElementById('err-enterprise').classList.remove('show');
+    }
+
+    // Email validation
+    const email = document.getElementById('email').value.trim();
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      document.getElementById('email').classList.add('error');
+      document.getElementById('err-email').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('email').classList.remove('error');
+      document.getElementById('err-email').classList.remove('show');
+    }
+
+    // Order Amount validation
+    const orderAmount = document.getElementById('orderAmount').value.trim();
+    if (!orderAmount) {
+      document.getElementById('orderAmount').classList.add('error');
+      document.getElementById('err-orderAmount').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('orderAmount').classList.remove('error');
+      document.getElementById('err-orderAmount').classList.remove('show');
+    }
+
+    // Order Note validation
+    const orderNote = document.getElementById('orderNote').value.trim();
+    if (!orderNote) {
+      document.getElementById('orderNote').classList.add('error');
+      document.getElementById('err-orderNote').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('orderNote').classList.remove('error');
+      document.getElementById('err-orderNote').classList.remove('show');
+    }
+
+    // File validation
+    if (!fileInput.files.length) { 
+      document.getElementById('err-file').classList.add('show'); 
+      ok = false; 
+    }
     else document.getElementById('err-file').classList.remove('show');
+    
     return ok;
   }
 
-  /* ── FIX 3: submit check uses the correct placeholder string ── */
+  /* Submit */
   async function submitForm() {
     document.getElementById('success-banner').classList.remove('show');
     document.getElementById('error-banner').classList.remove('show');
     if (!validate()) return;
+
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner"></div> Submitting…';
+
+    // Show success immediately without waiting for API response.
+    document.getElementById('success-banner').classList.add('show');
+    document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
     const file = fileInput.files[0];
     let fileBase64 = '', fileMime = '', fileName = '';
     if (file) { fileName = file.name; fileMime = file.type; fileBase64 = await toBase64(file); }
+
+    const enterprise = document.getElementById('enterprise').value.trim();
+    const enterpriseId = document.getElementById('enterprise-id').value.trim();
+
+    // Extract all query parameters (including hidden ones)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hiddenParams = {};
+    urlParams.forEach((value, key) => {
+      // Add all query params that aren't already handled by visible fields
+      const visibleParams = ['enterpriseids', 'email', 'mail', 'phone', 'mobile', 'tel', 'gstNumber', 'gst', 'gstin', 'address', 'addr', 'location', 'orderAmount', 'amount', 'total', 'orderNote', 'note', 'notes'];
+      if (!visibleParams.includes(key)) {
+        hiddenParams[key] = value;
+      }
+    });
+
     const payload = {
       timestamp:  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-      enterprise: document.getElementById('enterprise').value.trim(),
-      product:    document.getElementById('product').value.trim(),
+      enterprise: enterprise,
+      enterpriseId: enterpriseId,
       email:      document.getElementById('email').value.trim(),
       phone:      document.getElementById('phone').value.trim(),
-      discount:   document.getElementById('discount').value.trim(),
+      gstNumber:  document.getElementById('gstNumber').value.trim(),
+      address:    document.getElementById('address').value.trim(),
+      orderAmount: document.getElementById('orderAmount').value.trim(),
+      orderNote:  document.getElementById('orderNote').value.trim(),
       fileName, fileBase64, fileMime,
-      tds:        document.getElementById('tds').checked,
-      gst:        document.getElementById('gst').checked,
-      taxInvoice: document.getElementById('taxinv').checked
+      tdsAmount:  document.getElementById('tdsAmount').checked ? document.getElementById('tdsAmountValue').value.trim() : '',
+      gstPendingAmount: document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '',
+      username: urlParams.get('username') || '',
+      leaidID: urlParams.get('LeadID') || '',
+      createdFrom: urlParams.get('Created_from') || '',
+      ...hiddenParams  // Spread hidden query parameters
     };
-    try {
-      /* Only block if truly unconfigured */
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
-        throw new Error('Apps Script URL not configured. Please replace PASTE_YOUR_APPS_SCRIPT_URL_HERE with your URL.');
-      }
-      await fetch(APPS_SCRIPT_URL, {
+
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+      console.warn('Apps Script URL not configured. Skipping submit request.');
+    } else {
+      fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
+      }).catch(err => {
+        console.error('Background submit failed:', err);
       });
-      document.getElementById('success-banner').classList.add('show');
-      document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } catch (err) {
-      document.getElementById('error-text').textContent = err.message || 'Submission failed. Please try again.';
-      document.getElementById('error-banner').classList.add('show');
-      document.getElementById('error-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg> Submit ';
     }
+
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg> Submit ';
   }
 
   function toBase64(file) {
@@ -335,16 +806,21 @@
   }
 
   function resetForm() {
-    ['enterprise','product','discount','email','phone'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('error','prefilled'); });
-    ['tds','gst','taxinv'].forEach(id => document.getElementById(id).checked = false);
+    ['email','phone','gstNumber','address','orderAmount','orderNote'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('error','prefilled'); });
+    ['tdsAmount','gstPendingAmount'].forEach(id => document.getElementById(id).checked = false);
+    document.getElementById('tdsAmountValue').value = '';
+    document.getElementById('gstPendingAmountValue').value = '';
+    document.getElementById('tds-amount-wrapper').style.display = 'none';
+    document.getElementById('gst-amount-wrapper').style.display = 'none';
     removeFile();
+    document.getElementById('enterprise').value = '';
+    document.getElementById('enterprise').classList.remove('error');
+    document.getElementById('enterprise-dropdown').style.display = 'none';
     ['success-banner','error-banner'].forEach(id => document.getElementById(id).classList.remove('show'));
-    ['err-enterprise','err-product','err-email','err-file'].forEach(id => document.getElementById(id).classList.remove('show'));
-    ['badge-email','badge-phone'].forEach(id => document.getElementById(id).style.display = 'none');
-    document.getElementById('prefill-note').style.display = 'none';
+    ['err-enterprise','err-email','err-orderAmount','err-orderNote','err-file'].forEach(id => document.getElementById(id).classList.remove('show'));
   }
 
-  ['enterprise','product','email'].forEach(id => {
+  ['email','orderAmount','orderNote'].forEach(id => {
     document.getElementById(id).addEventListener('input', function() {
       if (this.value.trim()) { this.classList.remove('error'); document.getElementById('err-' + id)?.classList.remove('show'); }
     });
