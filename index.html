@@ -121,11 +121,8 @@
 </head>
 <body>
 <div class="wrapper">
-  <div class="header">
-    <div class="header-badge">
-      <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0L7.5 4.5H12L8.5 7L10 11.5L6 9L2 11.5L3.5 7L0 4.5H4.5L6 0Z"/></svg>
-      Payment Request
-    </div>
+  <div class="header" style="position: center ; text-align: center;">
+    
     <h1>Submit Order Details</h1>
   </div>
 
@@ -186,8 +183,9 @@
           <input type="tel" id="phone" placeholder="+91 925820 XXXX">
         </div>
         <div class="field full">
-          <label for="gstNumber">GST Number</label>
-          <input type="text" id="gstNumber" placeholder="e.g. 27AABCU9603R1Z5">
+          <label for="gstNumber">GST Number <span class="req">*</span></label>
+          <input type="text" id="gstNumber" placeholder="Update the KYC number in the lead, then reopen the app." readonly>
+          <span class="error-msg" id="err-gstNumber">GST Number is required</span>
         </div>
         <div class="field full">
           <label for="address">Address</label>
@@ -203,6 +201,15 @@
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6.5h14M5 10h2"/></svg>
         </div>
         <div><div class="section-title">Payment details</div><div class="section-sub">Screenshot & tax options</div></div>
+      </div>
+      <div class="field" style="margin-bottom:1.1rem">
+        <label for="sourcePayment">Source of payment <span class="req">*</span></label>
+        <select id="sourcePayment" style="width: 100%; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s;">
+          <option value="">Select source</option>
+          <option value="NEFT">NEFT</option>
+          <option value="Razorpay">Razorpay</option>
+        </select>
+        <span class="error-msg" id="err-sourcePayment">Please select source of payment</span>
       </div>
       <div class="field" style="margin-bottom:1.1rem">
         <label>Screenshot of payment <span class="req">*</span></label>
@@ -300,7 +307,7 @@
             <input type="checkbox" id="tdsAmount" onchange="toggleAmountField('tds')">
             <div class="check-text">
               <div class="check-title">TDS amount deducted</div>
-              <div class="check-desc">Tax Deducted at Source has been applied to this payment</div>
+              <div class="check-desc">TDS has already been deducted from this payment.</div>
             </div>
           </div>
           <!-- Dynamic Amount Field for TDS -->
@@ -315,7 +322,7 @@
             <input type="checkbox" id="gstPendingAmount" onchange="toggleAmountField('gst')">
             <div class="check-text">
               <div class="check-title">GST pending amount</div>
-              <div class="check-desc">Goods & Services Tax amount is pending for this transaction</div>
+              <div class="check-desc">GST for this transaction is still pending.</div>
             </div>
           </div>
           <!-- Dynamic Amount Field for GST -->
@@ -349,7 +356,7 @@
 
 <script>
   /* ══ CONFIGURATION ══ */
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl39O3BgWyqYbQ1wLRGAZcpXQAesLsO8T8-RoWizYFqpKKhUmJ-JDwy2cKDwnYxzMj/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI5hR6Tn1F93HYRbIGiM6-DvB8-1lDYM4esHej-CYykirSF-XOSnDKqwf5BHg7MFar/exec';
   const TELECRM_API_BASE = 'https://next.telecrm.in/api/b1/enterprise';
   const API_KEY = 'Bearerserverapi a7b3c9d2e4f6g8h0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4'; // ⚠️ REPLACE WITH YOUR KEY
   /* ═════════════════ */
@@ -358,6 +365,7 @@
   let allEnterprises = [];
   let enterprisesLoadPromise = null;
   let enterpriseDropdownUserIntent = false;
+  let gstMeta = { lgnm: '', stcd: '', pncd: '' };
 
   window.addEventListener('DOMContentLoaded', () => {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
@@ -690,6 +698,12 @@
       const data = await response.json();
       
       if (data.flag && data.data) {
+        gstMeta = {
+          lgnm: data.data.lgnm || '',
+          stcd: data.data?.pradr?.addr?.stcd || '',
+          pncd: data.data?.pradr?.addr?.pncd || ''
+        };
+
         // Populate address from API response
         const pradr = data.data.pradr;
         if (pradr && pradr.adr) {
@@ -697,9 +711,11 @@
           document.getElementById('address').classList.add('prefilled');
         }
       } else {
+        gstMeta = { lgnm: '', stcd: '', pncd: '' };
         console.warn('GST not found or API error:', data.message);
       }
     } catch (error) {
+      gstMeta = { lgnm: '', stcd: '', pncd: '' };
       console.error('Error fetching GST details:', error);
     }
   }
@@ -729,6 +745,17 @@
       document.getElementById('err-email').classList.remove('show');
     }
 
+    // GST validation (mandatory, non-editable field sourced from lead/query params)
+    const gstNumber = document.getElementById('gstNumber').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!gstNumber || gstNumber.length < 10) {
+      document.getElementById('gstNumber').classList.add('error');
+      document.getElementById('err-gstNumber').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('gstNumber').classList.remove('error');
+      document.getElementById('err-gstNumber').classList.remove('show');
+    }
+
     // Order Amount validation
     const orderAmount = document.getElementById('orderAmount').value.trim();
     if (!orderAmount) {
@@ -749,6 +776,17 @@
     } else {
       document.getElementById('orderNote').classList.remove('error');
       document.getElementById('err-orderNote').classList.remove('show');
+    }
+
+    // Source of payment validation
+    const sourcePayment = document.getElementById('sourcePayment').value.trim();
+    if (!sourcePayment) {
+      document.getElementById('sourcePayment').classList.add('error');
+      document.getElementById('err-sourcePayment').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('sourcePayment').classList.remove('error');
+      document.getElementById('err-sourcePayment').classList.remove('show');
     }
 
     // File validation
@@ -800,9 +838,13 @@
       email:      document.getElementById('email').value.trim(),
       phone:      document.getElementById('phone').value.trim(),
       gstNumber:  document.getElementById('gstNumber').value.trim(),
+      lgnm:       gstMeta.lgnm || '',
+      stcd:       gstMeta.stcd || '',
+      pncd:       gstMeta.pncd || '',
       address:    document.getElementById('address').value.trim(),
       orderAmount: document.getElementById('orderAmount').value.trim(),
       orderNote:  document.getElementById('orderNote').value.trim(),
+      sourcePayment: document.getElementById('sourcePayment').value.trim(),
       fileName, fileBase64, fileMime,
       tdsAmount:  document.getElementById('tdsAmount').checked ? document.getElementById('tdsAmountValue').value.trim() : '',
       gstPendingAmount: document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '',
@@ -835,6 +877,9 @@
 
   function resetForm() {
     ['email','phone','gstNumber','address','orderAmount','orderNote'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('error','prefilled'); });
+    const sourcePaymentEl = document.getElementById('sourcePayment');
+    sourcePaymentEl.value = '';
+    sourcePaymentEl.classList.remove('error');
     ['tdsAmount','gstPendingAmount'].forEach(id => document.getElementById(id).checked = false);
     document.getElementById('tdsAmountValue').value = '';
     document.getElementById('gstPendingAmountValue').value = '';
@@ -846,6 +891,9 @@
     document.getElementById('enterprise-dropdown').style.display = 'none';
     ['success-banner','error-banner'].forEach(id => document.getElementById(id).classList.remove('show'));
     ['err-enterprise','err-email','err-orderAmount','err-orderNote','err-file'].forEach(id => document.getElementById(id).classList.remove('show'));
+    document.getElementById('err-gstNumber')?.classList.remove('show');
+    document.getElementById('err-sourcePayment')?.classList.remove('show');
+    gstMeta = { lgnm: '', stcd: '', pncd: '' };
   }
 
   ['email','orderAmount','orderNote'].forEach(id => {
