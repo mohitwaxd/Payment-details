@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Request Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F5F4F0; --surface: #FFFFFF; --surface-2: #F8F7F4;
+      --border: #E2E0D8; --border-focus: #3A6FF7;
+      --text-primary: #1A1916; --text-secondary: #6B6860; --text-hint: #A09E97;
+      --accent: #3A6FF7; --accent-light: #EEF2FF;
+      --success: #1A8C5B; --success-light: #E8F7F0;
+      --danger: #C93B3B; --danger-light: #FDEEEE;
+      --prefill-bg: #FFFBEB; --prefill-border: #F0C842; --prefill-text: #7A5C00;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --radius: 10px; --radius-sm: 6px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2.5rem 1rem 3rem; color: var(--text-primary); }
+    .wrapper { width: 100%; max-width: 620px; }
+    .header { margin-bottom: 1.5rem; padding: 0 0.25rem; }
+    .header-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+    .header h1 { font-size: 24px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+    .header p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .card { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+    .section { padding: 1.5rem 1.75rem; }
+    .section + .section { border-top: 1px solid var(--border); }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+    .section-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .section-icon.blue { background: var(--accent-light); } .section-icon.green { background: var(--success-light); } .section-icon.amber { background: #FFF6E0; }
+    .section-icon svg { width: 15px; height: 15px; }
+    .section-icon.blue svg { color: var(--accent); } .section-icon.green svg { color: var(--success); } .section-icon.amber svg { color: #B07A00; }
+    .section-title { font-size: 13px; font-weight: 600; color: var(--text-primary); } .section-sub { font-size: 12px; color: var(--text-hint); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 5px; } .field.full { grid-column: 1 / -1; }
+    label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .req { color: var(--danger); font-size: 13px; }
+    .badge-prefill { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: #7A5C00; background: #FFF3C4; padding: 2px 6px; border-radius: 4px; }
+    input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+    input::placeholder { color: var(--text-hint); font-size: 13px; }
+    input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(58,111,247,0.1); }
+    input.prefilled { background: var(--prefill-bg); border-color: var(--prefill-border); color: var(--prefill-text); font-family: 'DM Mono', monospace; font-size: 13px; }
+    input.prefilled:focus { border-color: var(--border-focus); background: var(--surface); color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 14px; }
+    input.error { border-color: var(--danger); background: var(--danger-light); }
+    .error-msg { font-size: 11.5px; color: var(--danger); display: none; } .error-msg.show { display: block; }
+    .info-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #F0C842; border-radius: var(--radius-sm); font-size: 12px; color: #7A5C00; line-height: 1.5; margin-bottom: 1.25rem; }
+    .info-note svg { flex-shrink: 0; margin-top: 1px; }
+    .config-banner { background: #FFF8E1; border: 1px solid #FFD54F; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 1.25rem; font-size: 12.5px; color: #5D4037; display: none; gap: 8px; align-items: flex-start; line-height: 1.6; }
+    .config-banner a { color: var(--accent); }
+    .file-zone { border: 1.5px dashed var(--border); border-radius: var(--radius-sm); padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface-2); position: relative; }
+    .file-zone:hover, .file-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+    .file-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .file-icon { width: 36px; height: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+    .file-zone p { font-size: 13px; color: var(--text-secondary); } .file-zone p strong { color: var(--accent); font-weight: 500; }
+    .file-zone small { font-size: 11px; color: var(--text-hint); display: block; margin-top: 3px; }
+    .file-selected { display: none; align-items: center; gap: 10px; padding: 10px 12px; background: var(--success-light); border: 1px solid #A8DFC4; border-radius: var(--radius-sm); margin-top: 8px; }
+    .file-selected.show { display: flex; }
+    .file-selected svg { color: var(--success); flex-shrink: 0; }
+    .file-selected span { font-size: 13px; color: var(--success); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-selected button { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-hint); padding: 2px; display: flex; align-items: center; }
+    .file-selected button:hover { color: var(--danger); }
+    .checks-grid { display: flex; flex-direction: column; gap: 8px; }
+    .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; background: var(--surface-2); user-select: none; }
+    .check-item:hover { border-color: var(--accent); background: var(--accent-light); }
+    .check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); margin-top: 2px; cursor: pointer; flex-shrink: 0; }
+    .check-item:has(input:checked) { border-color: #A0B4F8; background: var(--accent-light); }
+    .check-text { flex: 1; } .check-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; } .check-desc { font-size: 12px; color: var(--text-hint); line-height: 1.5; }
+    .form-footer { padding: 1.25rem 1.75rem; border-top: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; gap: 10px; }
+    .btn-reset { padding: 9px 18px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text-secondary); background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+    .btn-reset:hover { border-color: var(--text-hint); color: var(--text-primary); }
+    .btn-submit { flex: 1; padding: 10px 18px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-submit:hover { background: #2558E0; } .btn-submit:active { transform: scale(0.98); } .btn-submit:disabled { background: #A0B4F8; cursor: not-allowed; transform: none; }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success-banner { display: none; margin: 0 1.75rem 1.25rem; padding: 14px 16px; background: var(--success-light); border: 1px solid #A8DFC4; border-radius: var(--radius-sm); font-size: 14px; color: var(--success); font-weight: 500; align-items: center; gap: 10px; }
+    .success-banner.show { display: flex; }
+    .error-banner { display: none; margin: 0 1.75rem 1.25rem; padding: 14px 16px; background: var(--danger-light); border: 1px solid #F5BBBB; border-radius: var(--radius-sm); font-size: 13px; color: var(--danger); align-items: flex-start; gap: 10px; }
+    .error-banner.show { display: flex; }
+    .setup-guide { margin-top: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 1.75rem; box-shadow: var(--shadow); }
+    .setup-guide h2 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary); }
+    .step { display: flex; gap: 12px; margin-bottom: 14px; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-body { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+    .step-body strong { color: var(--text-primary); font-weight: 500; }
+    .step-body a { color: var(--accent); }
+    code { background: #F0F0E8; padding: 1px 5px; border-radius: 3px; font-family: 'DM Mono', monospace; font-size: 11.5px; color: #333; }
+    code.url { background: #FFE082; }
+    .headers-code { display: block; background: #F8F7F0; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: #444; margin-top: 6px; line-height: 1.8; word-break: break-all; }
+    @media (max-width: 520px) { body { padding: 1rem 0.75rem 2rem; } .section { padding: 1.25rem; } .grid-2 { grid-template-columns: 1fr; } .form-footer { flex-wrap: wrap; } .form-footer .btn-reset { flex: 1; } .header h1 { font-size: 20px; } .success-banner, .error-banner { margin: 0 1.25rem 1rem; } }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="header-badge">
+      <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0L7.5 4.5H12L8.5 7L10 11.5L6 9L2 11.5L3.5 7L0 4.5H4.5L6 0Z"/></svg>
+      Payment Request
+    </div>
+    <h1>Submit Payment Details</h1>
+  </div>
+
+
+  <div class="card">
+    <!-- Business Info -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon blue">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="10" rx="1.5"/><path d="M4 4V3a2 2 0 014 0v1M8 4V3a2 2 0 014 0v1"/></svg>
+        </div>
+        <div><div class="section-title">Business information</div><div class="section-sub">Enterprise & product details</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="enterprise">Enterprise name <span class="req">*</span></label>
+          <input type="text" id="enterprise" placeholder="e.g. Acme Pvt. Ltd.">
+          <span class="error-msg" id="err-enterprise">Please enter enterprise name</span>
+        </div>
+        <div class="field">
+          <label for="discount">Discount</label>
+          <input type="text" id="discount" placeholder="e.g. 10% or ₹500">
+        </div>
+        <div class="field full">
+          <label for="product">Product and quantity <span class="req">*</span></label>
+          <input type="text" id="product" placeholder="e.g. Pro Plan × 5 seats">
+          <span class="error-msg" id="err-product">Please enter product and quantity</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon green">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+        </div>
+        <div><div class="section-title">Contact info</div><div class="section-sub">Auto-filled — click to edit if needed</div></div>
+      </div>
+      <div id="prefill-note" class="info-note" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="#B07A00"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a1 1 0 110 2 1 1 0 010-2zm-1 4h2v5H7V7z"/></svg>
+        These fields were pre-filled from your invite link. You can click any field to edit before submitting.
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="email">Email ID <span class="req">*</span>
+            <span class="badge-prefill" id="badge-email" style="display:none">✎ pre-filled</span>
+          </label>
+          <input type="email" id="email" placeholder="you@company.com">
+          <span class="error-msg" id="err-email">Please enter a valid email</span>
+        </div>
+        <div class="field">
+          <label for="phone">Phone
+            <span class="badge-prefill" id="badge-phone" style="display:none">✎ pre-filled</span>
+          </label>
+          <input type="tel" id="phone" placeholder="+91 98765 43210">
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon amber">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6.5h14M5 10h2"/></svg>
+        </div>
+        <div><div class="section-title">Payment details</div><div class="section-sub">Screenshot & tax options</div></div>
+      </div>
+      <div class="field" style="margin-bottom:1.1rem">
+        <label>Screenshot of payment <span class="req">*</span></label>
+        <div class="file-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept="image/png,image/jpeg,image/jpg,image/webp,.pdf" onclick="event.stopPropagation()">
+          <div class="file-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12M8 8l4-4 4 4"/></svg>
+          </div>
+          <p><strong>Click to upload</strong> or drag & drop</p>
+          <small>PNG, JPG, WEBP, PDF — max 10 MB</small>
+        </div>
+        <div class="file-selected" id="file-selected">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg>
+          <span id="file-label"></span>
+          <button type="button" onclick="removeFile()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm2.854 4.146a.5.5 0 010 .708L8.707 8l2.147 2.146a.5.5 0 01-.708.708L8 8.707l-2.146 2.147a.5.5 0 01-.708-.708L7.293 8 5.146 5.854a.5.5 0 01.708-.708L8 7.293l2.146-2.147a.5.5 0 01.708 0z"/></svg>
+          </button>
+        </div>
+        <span class="error-msg" id="err-file">Please upload a payment screenshot</span>
+      </div>
+      <div class="checks-grid">
+        <label class="check-item"><input type="checkbox" id="tds"><div class="check-text"><div class="check-title">TDS amount deducted</div><div class="check-desc">Tax Deducted at Source has been applied to this payment</div></div></label>
+        <label class="check-item"><input type="checkbox" id="gst"><div class="check-text"><div class="check-title">GST pending amount</div><div class="check-desc">Goods & Services Tax amount is pending for this transaction</div></div></label>
+        <label class="check-item"><input type="checkbox" id="taxinv"><div class="check-text"><div class="check-title">Tax invoice before payment</div><div class="check-desc">Requesting tax invoice to be issued prior to payment processing</div></div></label>
+      </div>
+    </div>
+
+    <div class="success-banner" id="success-banner">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg>
+      <div><strong>Submitted!</strong> Your payment request has been saved</div>
+    </div>
+    <div class="error-banner" id="error-banner">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;margin-top:1px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4h1.5l-.25 4.5h-1L7.25 5zM8 11.5a.75.75 0 110-1.5.75.75 0 010 1.5z"/></svg>
+      <span id="error-text">Submission failed. Please try again.</span>
+    </div>
+
+    <div class="form-footer">
+      <button class="btn-reset" type="button" onclick="resetForm()">Clear form</button>
+      <button class="btn-submit" type="button" id="submit-btn" onclick="submitForm()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+        Submit
+      </button>
+    </div>
+  </div>
+
+  <!-- Setup Guide -->
+
+
+</div>
+
+<script>
+  /* ══ CONFIGURE THIS ══════════════════════════════════════ */
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuBKqTqKK9JdabdWeq9KrTzwWVxmngBZENrqmvSgxnebq5d_18ur_He4dIJLdmDlaU/exec';
+  /* ═══════════════════════════════════════════════════════ */
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxuBKqTqKK9JdabdWeq9KrTzwWVxmngBZENrqmvSgxnebq5d_18ur_He4dIJLdmDlaU/exec') {
+      document.getElementById('config-banner').style.display = 'flex';
+    }
+    prefill();
+  });
+
+  function prefill() {
+    const q = new URLSearchParams(window.location.search);
+    const get = (...keys) => keys.map(k => q.get(k)).find(Boolean) || '';
+    const map = {
+      enterprise: get('enterprise','company','org'),
+      product:    get('product','item','products'),
+      email:      get('email','mail'),
+      phone:      get('phone','mobile','tel'),
+      discount:   get('discount','disc')
+    };
+    let hasContact = false;
+    Object.entries(map).forEach(([id, val]) => {
+      if (!val) return;
+      const el = document.getElementById(id);
+      el.value = val;
+      el.classList.add('prefilled');
+      el.addEventListener('focus', () => el.classList.remove('prefilled'), { once: true });
+      if (id === 'email' || id === 'phone') {
+        document.getElementById('badge-' + id).style.display = 'inline-flex';
+        hasContact = true;
+      }
+    });
+    if (hasContact) document.getElementById('prefill-note').style.display = 'flex';
+  }
+
+  /* File upload */
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) showFile(fileInput.files[0]); });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) { const dt = new DataTransfer(); dt.items.add(f); fileInput.files = dt.files; showFile(f); }
+  });
+  function showFile(file) {
+    document.getElementById('file-label').textContent = file.name;
+    document.getElementById('file-selected').classList.add('show');
+    dropZone.style.display = 'none';
+    document.getElementById('err-file').classList.remove('show');
+  }
+  function removeFile() {
+    fileInput.value = '';
+    document.getElementById('file-selected').classList.remove('show');
+    dropZone.style.display = '';
+  }
+
+  /* Validation */
+  function validate() {
+    let ok = true;
+    [{ id:'enterprise' }, { id:'product' }, { id:'email', test: v => /\S+@\S+\.\S+/.test(v) }].forEach(({ id, test }) => {
+      const el = document.getElementById(id), err = document.getElementById('err-' + id);
+      const pass = test ? test(el.value.trim()) : el.value.trim();
+      if (!pass) { el.classList.add('error'); err.classList.add('show'); ok = false; }
+      else { el.classList.remove('error'); err.classList.remove('show'); }
+    });
+    if (!fileInput.files.length) { document.getElementById('err-file').classList.add('show'); ok = false; }
+    else document.getElementById('err-file').classList.remove('show');
+    return ok;
+  }
+
+  /* Submit */
+  async function submitForm() {
+    document.getElementById('success-banner').classList.remove('show');
+    document.getElementById('error-banner').classList.remove('show');
+    if (!validate()) return;
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Submitting…';
+    const file = fileInput.files[0];
+    let fileBase64 = '', fileMime = '', fileName = '';
+    if (file) { fileName = file.name; fileMime = file.type; fileBase64 = await toBase64(file); }
+    const payload = {
+      timestamp:  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      enterprise: document.getElementById('enterprise').value.trim(),
+      product:    document.getElementById('product').value.trim(),
+      email:      document.getElementById('email').value.trim(),
+      phone:      document.getElementById('phone').value.trim(),
+      discount:   document.getElementById('discount').value.trim(),
+      fileName, fileBase64, fileMime,
+      tds:        document.getElementById('tds').checked,
+      gst:        document.getElementById('gst').checked,
+      taxInvoice: document.getElementById('taxinv').checked
+    };
+    try {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE')
+        throw new Error('Apps Script URL not configured. Please follow the setup guide below.');
+      await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      document.getElementById('success-banner').classList.add('show');
+      document.getElementById('success-banner').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    } catch (err) {
+      document.getElementById('error-text').textContent = err.message || 'Submission failed. Please try again.';
+      document.getElementById('error-banner').classList.add('show');
+      document.getElementById('error-banner').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg> Submit to Google Sheets';
+    }
+  }
+
+  function toBase64(file) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+  }
+
+  function resetForm() {
+    ['enterprise','product','discount','email','phone'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('error','prefilled'); });
+    ['tds','gst','taxinv'].forEach(id => document.getElementById(id).checked = false);
+    removeFile();
+    ['success-banner','error-banner'].forEach(id => document.getElementById(id).classList.remove('show'));
+    ['err-enterprise','err-product','err-email','err-file'].forEach(id => document.getElementById(id).classList.remove('show'));
+    ['badge-email','badge-phone'].forEach(id => document.getElementById(id).style.display = 'none');
+    document.getElementById('prefill-note').style.display = 'none';
+  }
+
+  ['enterprise','product','email'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      if (this.value.trim()) { this.classList.remove('error'); document.getElementById('err-' + id)?.classList.remove('show'); }
+    });
+  });
+</script>
+</body>
+</html>
