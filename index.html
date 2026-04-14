@@ -692,6 +692,7 @@
     if (!normalizedGst || normalizedGst.length < 10) return;
 
     const apiUrl = `https://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc/${normalizedGst}`;
+    const addressEl = document.getElementById('address');
     
     try {
       const response = await fetch(apiUrl);
@@ -707,11 +708,17 @@
         // Populate address from API response
         const pradr = data.data.pradr;
         if (pradr && pradr.adr) {
-          document.getElementById('address').value = pradr.adr;
-          document.getElementById('address').classList.add('prefilled');
+          addressEl.value = pradr.adr;
+          addressEl.placeholder = 'Enter complete address...';
+          addressEl.classList.add('prefilled');
         }
       } else {
         gstMeta = { lgnm: '', stcd: '', pncd: '' };
+        if (data.errorCode === 'INVALID_GSTNUMBER') {
+          addressEl.value = '';
+          addressEl.classList.remove('prefilled');
+          addressEl.placeholder = 'Invalid GSTIN in lead. Update KYC GST Number in lead and reopen app.';
+        }
         console.warn('GST not found or API error:', data.message);
       }
     } catch (error) {
