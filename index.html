@@ -356,6 +356,7 @@
 
   let enterprisesData = [];
   let allEnterprises = [];
+  let enterprisesLoadPromise = null;
 
   window.addEventListener('DOMContentLoaded', () => {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
@@ -403,6 +404,16 @@
   }
 
   async function loadEnterprises() {
+    if (enterprisesLoadPromise) return enterprisesLoadPromise;
+    enterprisesLoadPromise = loadEnterprisesInternal();
+    try {
+      return await enterprisesLoadPromise;
+    } finally {
+      enterprisesLoadPromise = null;
+    }
+  }
+
+  async function loadEnterprisesInternal() {
     const q = new URLSearchParams(window.location.search);
     const enterpriseParam = q.get('enterpriseids');
     
@@ -420,7 +431,7 @@
       
       allEnterprises = results
         .filter(data => data && data.id)
-        .map(data => ({ id: data.id, name: data.name }));
+        .map(data => ({ id: String(data.id), name: String(data.name || '') }));
 
       if (allEnterprises.length > 0) {
         renderEnterpriseDropdown();
@@ -436,16 +447,26 @@
   }
 
   async function fetchEnterprise(id) {
-    try {
-      const response = await fetch(`${TELECRM_API_BASE}/${id}`, {
+    const enterpriseId = String(id).trim();
+    const makeRequest = async () => {
+      const response = await fetch(`${TELECRM_API_BASE}/${enterpriseId}`, {
         method: 'GET',
         headers: { 'authorization': API_KEY }
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
+      return response.json();
+    };
+
+    try {
+      return await makeRequest();
     } catch (err) {
-      console.error(`Failed to fetch enterprise ${id}:`, err);
-      return null;
+      console.warn(`First attempt failed for enterprise ${enterpriseId}, retrying...`, err);
+      try {
+        return await makeRequest();
+      } catch (retryErr) {
+        console.error(`Failed to fetch enterprise ${enterpriseId}:`, retryErr);
+        return null;
+      }
     }
   }
 
@@ -539,13 +560,10 @@
     });
 
     // If GST is provided in query params and address is not, fetch address from GST API.
-    const gstFromQuery = map.gstNumber ? map.gstNumber.trim().toUpperCase() : '';
+    const gstFromQuery = map.gstNumber ? map.gstNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
     if (gstFromQuery && gstFromQuery.length >= 10 && !map.address) {
       fetchGstDetails(gstFromQuery);
     }
-
-    // Load enterprises last
-    loadEnterprises();
   }
 
   /* File upload */
@@ -643,7 +661,7 @@
     const gstNumberInput = document.getElementById('gstNumber');
     
     gstNumberInput.addEventListener('blur', async () => {
-      const gstNumber = gstNumberInput.value.trim().toUpperCase();
+      const gstNumber = gstNumberInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
       
       // Only fetch if GST number is provided and has valid format
       if (!gstNumber || gstNumber.length < 10) {
@@ -655,7 +673,10 @@
   }
 
   async function fetchGstDetails(gstNumber) {
-    const apiUrl = `http://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc/${gstNumber}`;
+    const normalizedGst = String(gstNumber || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!normalizedGst || normalizedGst.length < 10) return;
+
+    const apiUrl = `https://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc/${normalizedGst}`;
     
     try {
       const response = await fetch(apiUrl);
