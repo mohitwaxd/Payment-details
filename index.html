@@ -357,6 +357,7 @@
   let enterprisesData = [];
   let allEnterprises = [];
   let enterprisesLoadPromise = null;
+  let enterpriseDropdownUserIntent = false;
 
   window.addEventListener('DOMContentLoaded', () => {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
@@ -379,15 +380,21 @@
     const input = document.getElementById('enterprise');
     const dropdown = document.getElementById('enterprise-dropdown');
 
+    // Mark explicit user intent so dropdown doesn't open randomly on page load/autofill.
+    input.addEventListener('pointerdown', () => { enterpriseDropdownUserIntent = true; });
+    input.addEventListener('keydown', () => { enterpriseDropdownUserIntent = true; });
+
     // Show dropdown on focus
     input.addEventListener('focus', () => {
-      if (allEnterprises.length > 0) {
+      if (enterpriseDropdownUserIntent && allEnterprises.length > 0) {
         showEnterpriseDropdown();
       }
     });
 
     // Filter as user types
     input.addEventListener('input', (e) => {
+      if (document.activeElement !== input) return;
+      enterpriseDropdownUserIntent = true;
       const value = e.target.value.toLowerCase();
       filterEnterpriseDropdown(value);
     });
@@ -527,6 +534,7 @@
     input.value = name;
     if (idField) idField.value = id || '';  // Store enterprise ID
     dropdown.style.display = 'none';
+    enterpriseDropdownUserIntent = false;
   }
 
   /* ── Original Prefill Logic ── */
