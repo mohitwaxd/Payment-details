@@ -107,6 +107,11 @@
     .success-banner.show { display: flex; }
     .error-banner { display: none; margin: 0 1.75rem 1.25rem; padding: 14px 16px; background: var(--danger-light); border: 1px solid #F5BBBB; border-radius: var(--radius-sm); font-size: 13px; color: var(--danger); align-items: flex-start; gap: 10px; }
     .error-banner.show { display: flex; }
+
+    /* Dropdown styles for GST */
+    .gst-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1.5px solid var(--border-focus); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .gst-dropdown-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s; font-family: 'DM Mono', monospace; font-size: 12px; }
+    .gst-dropdown-item:hover { background: var(--accent-light); }
     
     @media (max-width: 520px) { 
       body { padding: 1rem 0.75rem 2rem; } 
@@ -182,12 +187,22 @@
           </label>
           <input type="tel" id="phone" placeholder="+91 925820 XXXX">
         </div>
-        <div class="field full">
+        <div class="field full" id="gst-field-section">
           <label for="gstNumber">GST Number <span class="req">*</span></label>
-          <input type="text" id="gstNumber" placeholder="Update the KYC number in the lead, then reopen the app." readonly>
+          <div style="position: relative;">
+            <input type="text" id="gstNumber" placeholder="Type to search or select GST" autocomplete="off" style="padding-right: 36px;">
+            <div id="gst-dropdown" class="gst-dropdown">
+              <!-- Options populated by JavaScript -->
+            </div>
+            <div class="enterprise-loader" id="gst-loader" style="display:none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);">
+              <div class="loading-spinner" style="width: 12px; height: 12px;"></div>
+            </div>
+            <svg id="gst-dropdown-icon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <small style="display: block; margin-top: 6px; color: var(--text-hint); font-size: 11px;">Type to search or select from list</small>
           <span class="error-msg" id="err-gstNumber">GST Number is required</span>
         </div>
-        <div class="field full">
+        <div class="field full" id="address-field-section">
           <label for="address">Address</label>
           <textarea id="address" placeholder="Enter complete address..." style="width: 100%; min-height: 60px; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical;"></textarea>
         </div>
@@ -283,8 +298,6 @@
         <span class="error-msg" id="err-file">Please upload a payment screenshot</span>
       </div>
 
-      <!-- GST Details - REMOVED, moved to Contact Info -->
-
       <!-- Order Amount -->
       <div class="field full" style="margin-bottom: 16px;">
         <label for="orderAmount" style="display: block; margin-bottom: 8px;">Order Amount <span class="req">*</span></label>
@@ -302,7 +315,7 @@
       <!-- Dynamic Amount Fields for Checkboxes -->
       <div class="checks-grid" style="margin-top: 14px;">
         <!-- Checkbox 1: TDS -->
-        <label class="check-item" style="flex-direction: column; align-items: flex-start;">
+        <label class="check-item" style="flex-direction: column; align-items: flex-start;" id="tds-checkbox">
           <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
             <input type="checkbox" id="tdsAmount" onchange="toggleAmountField('tds')">
             <div class="check-text">
@@ -317,7 +330,7 @@
         </label>
 
         <!-- Checkbox 2: GST Pending -->
-        <label class="check-item" style="flex-direction: column; align-items: flex-start;">
+        <label class="check-item" style="flex-direction: column; align-items: flex-start;" id="gst-pending-checkbox">
           <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
             <input type="checkbox" id="gstPendingAmount" onchange="toggleAmountField('gst')">
             <div class="check-text">
@@ -335,12 +348,13 @@
 
     <div class="success-banner" id="success-banner">
       <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg>
-      <div><strong>Submitted!</strong> Your payment request has been saved.</div>
+      <div><strong>Successfully Submitted!</strong> Your order details have been saved. Form has been cleared and locked.</div>
     </div>
     <div class="error-banner" id="error-banner">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;margin-top:1px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4h1.5l-.25 4.5h-1L7.25 5zM8 11.5a.75.75 0 110-1.5.75.75 0 010 1.5z"/></svg>
       <span id="error-text">Submission failed. Please try again.</span>
     </div>
+    
 
     <div class="form-footer">
       <button class="btn-reset" type="button" onclick="resetForm()">Clear form</button>
@@ -359,6 +373,7 @@
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI5hR6Tn1F93HYRbIGiM6-DvB8-1lDYM4esHej-CYykirSF-XOSnDKqwf5BHg7MFar/exec';
   const TELECRM_API_BASE = 'https://next.telecrm.in/api/b1/enterprise';
   const API_KEY = 'Bearerserverapi a7b3c9d2e4f6g8h0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4'; // ⚠️ REPLACE WITH YOUR KEY
+  const GST_API_BASE = 'https://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc';
   /* ═════════════════ */
 
   let enterprisesData = [];
@@ -366,16 +381,59 @@
   let enterprisesLoadPromise = null;
   let enterpriseDropdownUserIntent = false;
   let gstMeta = { lgnm: '', stcd: '', pncd: '' };
+  let allGstNumbers = [];
+  let gstDropdownUserIntent = false;
+  let gstLoadPromise = null;
+  let gstMetaCache = {}; // Cache for GST metadata
+  let documentType = '';
+  let showGstFields = false;
 
   window.addEventListener('DOMContentLoaded', () => {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
       document.getElementById('config-banner').style.display = 'flex';
     }
     checkForConfig();
+    initializeDocumentType();
     setupEnterpriseSearch();
-    setupGstAutoFetch();
+    if (showGstFields) {
+      setupGstSearch();
+    }
     prefill();
   });
+  function disableAllFormInputs() {
+  // Disable all text inputs, textareas, and selects
+  const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], textarea, select');
+  inputs.forEach(input => {
+    input.disabled = true;
+    input.style.background = '#F8F7F4';
+    input.style.cursor = 'not-allowed';
+  });
+  
+  // Disable checkboxes
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    checkbox.disabled = true;
+    checkbox.style.cursor = 'not-allowed';
+  });
+  
+  // Disable file input and drop zone
+  const fileInput = document.getElementById('file-input');
+  const dropZone = document.getElementById('drop-zone');
+  if (fileInput) fileInput.disabled = true;
+  if (dropZone) {
+    dropZone.style.pointerEvents = 'none';
+    dropZone.style.opacity = '0.5';
+    dropZone.style.cursor = 'not-allowed';
+  }
+  
+  // Disable reset button
+  const resetBtn = document.querySelector('.btn-reset');
+  if (resetBtn) {
+    resetBtn.disabled = true;
+    resetBtn.style.opacity = '0.5';
+    resetBtn.style.cursor = 'not-allowed';
+  }
+}
 
   function checkForConfig() {
     if (!API_KEY || API_KEY.includes('YOUR_API_KEY')) {
@@ -383,23 +441,198 @@
     }
   }
 
-  /* ── Searchable Dropdown Setup ── */
+  /* ── Document Type Detection & Field Visibility Control ── */
+  function initializeDocumentType() {
+    const q = new URLSearchParams(window.location.search);
+    const rawDocType = q.get('documenttype') || '';
+    documentType = rawDocType.trim().toUpperCase();
+
+    // Check if documenttype is empty or contains only spaces
+    const isDocumentTypeEmpty = !rawDocType || rawDocType.trim() === '';
+
+    if (isDocumentTypeEmpty) {
+      // ✅ BLOCK ENTIRE FORM - Hide card and show full-screen warning
+      const card = document.querySelector('.card');
+      const header = document.querySelector('.header');
+      
+      // Hide the form card completely
+      if (card) card.style.display = 'none';
+      if (header) header.style.display = 'none';
+      
+      // Hide config banner if shown
+      const configBanner = document.getElementById('config-banner');
+      if (configBanner) configBanner.style.display = 'none';
+      
+      // Show blocking warning
+      const wrapper = document.querySelector('.wrapper');
+      if (wrapper) {
+        // Remove any existing warnings
+        const existingWarning = document.getElementById('kyc-blocking-warning');
+        if (existingWarning) existingWarning.remove();
+        
+        const warningDiv = document.createElement('div');
+        warningDiv.id = 'kyc-blocking-warning';
+        warningDiv.style.cssText = `
+          background: linear-gradient(135deg, #FFF8E1 0%, #FFFBEB 100%);
+          border: 2px solid #FFD54F;
+          border-radius: 16px;
+          padding: 48px 32px;
+          text-align: center;
+          box-shadow: 0 8px 24px rgba(255, 193, 7, 0.2);
+          margin-top: 3rem;
+        `;
+        
+        warningDiv.innerHTML = `
+          <div style="max-width: 500px; margin: 0 auto;">
+            <!-- Warning Icon -->
+            <div style="margin-bottom: 24px;">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#B07A00" stroke-width="1.5" style="margin: 0 auto; display: block;">
+                <path d="M12 2L2 20h20L12 2z"/>
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+              </svg>
+            </div>
+            
+            <!-- Title -->
+            <h1 style="
+              font-size: 28px;
+              font-weight: 700;
+              color: #5D4037;
+              margin: 0 0 16px 0;
+              font-family: 'DM Sans', sans-serif;
+            ">Update KYC Details in Lead</h1>
+            
+            <!-- Description -->
+            <p style="
+              font-size: 15px;
+              color: #6B5B48;
+              line-height: 1.8;
+              margin: 0 0 28px 0;
+              font-family: 'DM Sans', sans-serif;
+            ">
+              This form requires complete KYC verification before you can proceed. 
+              Your lead profile is missing required document type information.
+            </p>
+            
+            <!-- Required Information Box -->
+            <div style="
+              background: #FFF3C4;
+              border: 1.5px solid #F0C842;
+              border-radius: 12px;
+              padding: 20px;
+              margin-bottom: 28px;
+              text-align: left;
+              font-family: 'DM Sans', sans-serif;
+            ">
+              <div style="
+                font-size: 13px;
+                font-weight: 600;
+                color: #7A5C00;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              ">
+                <span style="font-size: 18px;">📋</span>
+                Required Information to Complete:
+              </div>
+              
+              <div style="
+                font-size: 14px;
+                color: #7A5C00;
+                line-height: 2;
+              ">
+                <div>✓ Document Type (GST,Pan Card user , Adhar Card user.)</div>
+              </div>
+            </div>
+            
+            <!-- Action Steps -->
+            <div style="
+              background: #F5F4F0;
+              border: 1px solid #E2E0D8;
+              border-radius: 12px;
+              padding: 20px;
+              margin-bottom: 28px;
+              text-align: left;
+              font-family: 'DM Sans', sans-serif;
+            ">
+              <div style="
+                font-size: 13px;
+                font-weight: 600;
+                color: #1A1916;
+                margin-bottom: 12px;
+              ">Steps to Complete:</div>
+              
+              <ol style="
+                font-size: 13px;
+                color: #6B6860;
+                line-height: 2;
+                margin: 0;
+                padding-left: 20px;
+              ">
+                <li>Close this form window</li>
+                <li>Fill in the document type and KYC Document Number  details</li>
+                <li>Reopen this form to continue</li>
+              </ol>
+            </div>
+            
+            <!-- Support Message -->
+            <p style="
+              font-size: 12px;
+              color: #A09E97;
+              margin: 0;
+              font-family: 'DM Sans', sans-serif;
+            ">
+              🔒 Your information is secure. This restriction ensures data integrity and compliance.
+            </p>
+          </div>
+        `;
+        
+        wrapper.appendChild(warningDiv);
+      }
+      
+      return; // Stop all further initialization
+    }
+
+    // If we reach here, documenttype is NOT empty - continue normal flow
+    showGstFields = documentType === 'GST';
+
+    // Control GST field visibility
+    const gstSection = document.getElementById('gst-field-section');
+    const addressSection = document.getElementById('address-field-section');
+    const gstPendingCheckbox = document.getElementById('gst-pending-checkbox');
+    const tdsCheckbox = document.getElementById('tds-checkbox');
+
+    if (showGstFields) {
+      // Show GST fields
+      if (gstSection) gstSection.style.display = 'block';
+      if (addressSection) addressSection.style.display = 'block';
+      if (gstPendingCheckbox) gstPendingCheckbox.style.display = 'block';
+      if (tdsCheckbox) tdsCheckbox.style.display = 'block';
+    } else {
+      // Hide GST fields completely for non-GST document types
+      if (gstSection) gstSection.style.display = 'none';
+      if (addressSection) addressSection.style.display = 'none';
+      if (gstPendingCheckbox) gstPendingCheckbox.style.display = 'none';
+      if (tdsCheckbox) tdsCheckbox.style.display = 'none';
+      
+    }
+  }
+
+  /* ── Searchable Dropdown Setup for Enterprise ── */
   function setupEnterpriseSearch() {
     const input = document.getElementById('enterprise');
     const dropdown = document.getElementById('enterprise-dropdown');
 
-    // Mark explicit user intent so dropdown doesn't open randomly on page load/autofill.
     input.addEventListener('pointerdown', () => { enterpriseDropdownUserIntent = true; });
     input.addEventListener('keydown', () => { enterpriseDropdownUserIntent = true; });
 
-    // Show dropdown on focus
     input.addEventListener('focus', () => {
       if (enterpriseDropdownUserIntent && allEnterprises.length > 0) {
         showEnterpriseDropdown();
       }
     });
 
-    // Filter as user types
     input.addEventListener('input', (e) => {
       if (document.activeElement !== input) return;
       enterpriseDropdownUserIntent = true;
@@ -407,15 +640,51 @@
       filterEnterpriseDropdown(value);
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('[style*="position: relative"]') && e.target !== input) {
         dropdown.style.display = 'none';
       }
     });
 
-    // Load enterprises from API if available
     loadEnterprises();
+  }
+
+  /* ── Searchable Dropdown Setup for GST ── */
+  function setupGstSearch() {
+    const input = document.getElementById('gstNumber');
+    const dropdown = document.getElementById('gst-dropdown');
+
+    input.addEventListener('pointerdown', () => { gstDropdownUserIntent = true; });
+    input.addEventListener('keydown', () => { gstDropdownUserIntent = true; });
+
+    input.addEventListener('focus', () => {
+      if (gstDropdownUserIntent && allGstNumbers.length > 0) {
+        showGstDropdown();
+      }
+    });
+
+    input.addEventListener('input', (e) => {
+      if (document.activeElement !== input) return;
+      gstDropdownUserIntent = true;
+      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      filterGstDropdown(value);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target !== input && !e.target.closest('.gst-dropdown')) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // Auto-fetch GST details when a GST is selected/changed
+    input.addEventListener('blur', async () => {
+      const gstNumber = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (gstNumber && gstNumber.length >= 10) {
+        await fetchGstDetails(gstNumber);
+      }
+    });
+
+    loadGstNumbers();
   }
 
   async function loadEnterprises() {
@@ -461,6 +730,51 @@
     }
   }
 
+  async function loadGstNumbers() {
+    if (gstLoadPromise) return gstLoadPromise;
+    gstLoadPromise = loadGstNumbersInternal();
+    try {
+      return await gstLoadPromise;
+    } finally {
+      gstLoadPromise = null;
+    }
+  }
+
+  async function loadGstNumbersInternal() {
+    const q = new URLSearchParams(window.location.search);
+    const gstParam = q.get('gstnumbers') || q.get('gstnumber') || q.get('gstids');
+    
+    if (!gstParam) return;
+
+    const gstNumbers = gstParam.split(',').map(gst => gst.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(Boolean);
+    if (gstNumbers.length === 0) return;
+
+    const loader = document.getElementById('gst-loader');
+    loader.style.display = 'flex';
+
+    try {
+      // Fetch GST details for each GST number in parallel
+      const promises = gstNumbers.map(gst => fetchGstDetailsAPI(gst));
+      const results = await Promise.all(promises);
+      
+      allGstNumbers = results
+        .filter(data => data !== null)
+        .map(data => data.gstNumber);
+
+      if (allGstNumbers.length > 0) {
+        renderGstDropdown();
+        // If only one GST is provided, auto-select it
+        if (allGstNumbers.length === 1) {
+          selectGstNumber(allGstNumbers[0]);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading GST numbers:', err);
+    } finally {
+      loader.style.display = 'none';
+    }
+  }
+
   async function fetchEnterprise(id) {
     const enterpriseId = String(id).trim();
     const makeRequest = async () => {
@@ -485,6 +799,32 @@
     }
   }
 
+  async function fetchGstDetailsAPI(gstNumber) {
+    const normalizedGst = String(gstNumber || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!normalizedGst || normalizedGst.length < 10) return null;
+
+    try {
+      const response = await fetch(`${GST_API_BASE}/${normalizedGst}`);
+      const data = await response.json();
+      
+      if (data.flag && data.data) {
+        // Cache the GST metadata for later use
+        gstMetaCache[normalizedGst] = {
+          lgnm: data.data.lgnm || '',
+          stcd: data.data?.pradr?.addr?.stcd || '',
+          pncd: data.data?.pradr?.addr?.pncd || '',
+          address: data.data?.pradr?.adr || ''
+        };
+        
+        return { gstNumber: normalizedGst, valid: true };
+      }
+      return null;
+    } catch (err) {
+      console.warn(`Failed to fetch GST details for ${normalizedGst}:`, err);
+      return null;
+    }
+  }
+
   function renderEnterpriseDropdown() {
     const dropdown = document.getElementById('enterprise-dropdown');
     dropdown.innerHTML = allEnterprises
@@ -499,8 +839,27 @@
       .join('');
   }
 
+  function renderGstDropdown() {
+    const dropdown = document.getElementById('gst-dropdown');
+    dropdown.innerHTML = allGstNumbers
+      .map(gst => `
+        <div class="gst-dropdown-item" 
+             onmouseover="this.style.background='var(--accent-light)'" 
+             onmouseout="this.style.background='transparent'"
+             onclick="selectGstNumber('${gst.replace(/'/g, "\\'")}')">
+          ${gst}
+        </div>
+      `)
+      .join('');
+  }
+
   function showEnterpriseDropdown() {
     const dropdown = document.getElementById('enterprise-dropdown');
+    dropdown.style.display = 'block';
+  }
+
+  function showGstDropdown() {
+    const dropdown = document.getElementById('gst-dropdown');
     dropdown.style.display = 'block';
   }
 
@@ -535,14 +894,54 @@
     dropdown.style.display = 'block';
   }
 
+  function filterGstDropdown(searchValue) {
+    const dropdown = document.getElementById('gst-dropdown');
+    
+    if (searchValue === '' && allGstNumbers.length > 0) {
+      renderGstDropdown();
+      dropdown.style.display = 'block';
+      return;
+    }
+
+    const filtered = allGstNumbers.filter(gst => 
+      gst.includes(searchValue)
+    );
+
+    if (filtered.length === 0) {
+      dropdown.innerHTML = '<div style="padding: 12px; text-align: center; color: var(--text-hint); font-size: 12px;">No matches found</div>';
+    } else {
+      dropdown.innerHTML = filtered
+        .map(gst => `
+          <div class="gst-dropdown-item" 
+               onmouseover="this.style.background='var(--accent-light)'" 
+               onmouseout="this.style.background='transparent'"
+               onclick="selectGstNumber('${gst.replace(/'/g, "\\'")}')">
+            ${gst}
+          </div>
+        `)
+        .join('');
+    }
+
+    dropdown.style.display = 'block';
+  }
+
   function selectEnterprise(name, id) {
     const input = document.getElementById('enterprise');
     const dropdown = document.getElementById('enterprise-dropdown');
     const idField = document.getElementById('enterprise-id');
     input.value = name;
-    if (idField) idField.value = id || '';  // Store enterprise ID
+    if (idField) idField.value = id || '';
     dropdown.style.display = 'none';
     enterpriseDropdownUserIntent = false;
+  }
+
+  function selectGstNumber(gstNumber) {
+    const input = document.getElementById('gstNumber');
+    const dropdown = document.getElementById('gst-dropdown');
+    input.value = gstNumber;
+    input.classList.add('prefilled');
+    dropdown.style.display = 'none';
+    gstDropdownUserIntent = false;
   }
 
   /* ── Original Prefill Logic ── */
@@ -576,7 +975,7 @@
 
     // If GST is provided in query params and address is not, fetch address from GST API.
     const gstFromQuery = map.gstNumber ? map.gstNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
-    if (gstFromQuery && gstFromQuery.length >= 10 && !map.address) {
+    if (showGstFields && gstFromQuery && gstFromQuery.length >= 10 && !map.address) {
       fetchGstDetails(gstFromQuery);
     }
   }
@@ -602,22 +1001,17 @@
     const pdfFileName = document.getElementById('pdf-file-name');
     const pdfDownloadLink = document.getElementById('pdf-download-link');
 
-    // Show file info
     document.getElementById('file-name-display').textContent = file.name;
     document.getElementById('file-size-display').textContent = formatFileSize(file.size);
 
-    // Hide upload zone, show preview container
     dropZone.style.display = 'none';
     container.style.display = 'block';
     imagePreviewWrapper.style.display = 'none';
     pdfPreviewWrapper.style.display = 'none';
 
-    // Clear error
     document.getElementById('err-file').classList.remove('show');
 
-    // Handle different file types
     if (file.type.startsWith('image/')) {
-      // Image preview
       const reader = new FileReader();
       reader.onload = (e) => {
         imagePreview.src = e.target.result;
@@ -625,7 +1019,6 @@
       };
       reader.readAsDataURL(file);
     } else if (file.type === 'application/pdf') {
-      // PDF preview
       pdfFileName.textContent = file.name;
       const fileUrl = URL.createObjectURL(file);
       pdfDownloadLink.href = fileUrl;
@@ -672,26 +1065,27 @@
   }
 
   /* ── GST Auto-Fetch Functionality ── */
-  function setupGstAutoFetch() {
-    const gstNumberInput = document.getElementById('gstNumber');
-    
-    gstNumberInput.addEventListener('blur', async () => {
-      const gstNumber = gstNumberInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-      
-      // Only fetch if GST number is provided and has valid format
-      if (!gstNumber || gstNumber.length < 10) {
-        return;
-      }
-      
-      await fetchGstDetails(gstNumber);
-    });
-  }
-
   async function fetchGstDetails(gstNumber) {
     const normalizedGst = String(gstNumber || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (!normalizedGst || normalizedGst.length < 10) return;
 
-    const apiUrl = `https://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc/${normalizedGst}`;
+    // Check cache first
+    if (gstMetaCache[normalizedGst]) {
+      const cached = gstMetaCache[normalizedGst];
+      gstMeta = {
+        lgnm: cached.lgnm || '',
+        stcd: cached.stcd || '',
+        pncd: cached.pncd || ''
+      };
+      const addressEl = document.getElementById('address');
+      if (cached.address && !addressEl.value) {
+        addressEl.value = cached.address;
+        addressEl.classList.add('prefilled');
+      }
+      return;
+    }
+
+    const apiUrl = `${GST_API_BASE}/${normalizedGst}`;
     const addressEl = document.getElementById('address');
     
     try {
@@ -705,9 +1099,16 @@
           pncd: data.data?.pradr?.addr?.pncd || ''
         };
 
-        // Populate address from API response
+        // Cache the data
+        gstMetaCache[normalizedGst] = {
+          lgnm: gstMeta.lgnm,
+          stcd: gstMeta.stcd,
+          pncd: gstMeta.pncd,
+          address: data.data?.pradr?.adr || ''
+        };
+
         const pradr = data.data.pradr;
-        if (pradr && pradr.adr) {
+        if (pradr && pradr.adr && !addressEl.value) {
           addressEl.value = pradr.adr;
           addressEl.placeholder = 'Enter complete address...';
           addressEl.classList.add('prefilled');
@@ -726,6 +1127,7 @@
       console.error('Error fetching GST details:', error);
     }
   }
+
   function validate() {
     let ok = true;
     
@@ -740,7 +1142,6 @@
       document.getElementById('err-enterprise').classList.remove('show');
     }
 
-    // Email validation
     const email = document.getElementById('email').value.trim();
     const emailRegex = /\S+@\S+\.\S+/;
     if (!emailRegex.test(email)) {
@@ -752,18 +1153,19 @@
       document.getElementById('err-email').classList.remove('show');
     }
 
-    // GST validation (mandatory, non-editable field sourced from lead/query params)
-    const gstNumber = document.getElementById('gstNumber').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (!gstNumber || gstNumber.length < 10) {
-      document.getElementById('gstNumber').classList.add('error');
-      document.getElementById('err-gstNumber').classList.add('show');
-      ok = false;
-    } else {
-      document.getElementById('gstNumber').classList.remove('error');
-      document.getElementById('err-gstNumber').classList.remove('show');
+    // Only validate GST if it's shown (documenttype is GST)
+    if (showGstFields) {
+      const gstNumber = document.getElementById('gstNumber').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!gstNumber || gstNumber.length < 10) {
+        document.getElementById('gstNumber').classList.add('error');
+        document.getElementById('err-gstNumber').classList.add('show');
+        ok = false;
+      } else {
+        document.getElementById('gstNumber').classList.remove('error');
+        document.getElementById('err-gstNumber').classList.remove('show');
+      }
     }
 
-    // Order Amount validation
     const orderAmount = document.getElementById('orderAmount').value.trim();
     if (!orderAmount) {
       document.getElementById('orderAmount').classList.add('error');
@@ -774,7 +1176,6 @@
       document.getElementById('err-orderAmount').classList.remove('show');
     }
 
-    // Order Note validation
     const orderNote = document.getElementById('orderNote').value.trim();
     if (!orderNote) {
       document.getElementById('orderNote').classList.add('error');
@@ -785,7 +1186,6 @@
       document.getElementById('err-orderNote').classList.remove('show');
     }
 
-    // Source of payment validation
     const sourcePayment = document.getElementById('sourcePayment').value.trim();
     if (!sourcePayment) {
       document.getElementById('sourcePayment').classList.add('error');
@@ -796,7 +1196,6 @@
       document.getElementById('err-sourcePayment').classList.remove('show');
     }
 
-    // File validation
     if (!fileInput.files.length) { 
       document.getElementById('err-file').classList.add('show'); 
       ok = false; 
@@ -808,76 +1207,99 @@
 
   /* Submit */
   async function submitForm() {
-    document.getElementById('success-banner').classList.remove('show');
-    document.getElementById('error-banner').classList.remove('show');
-    if (!validate()) return;
+  document.getElementById('success-banner').classList.remove('show');
+  document.getElementById('error-banner').classList.remove('show');
+  if (!validate()) return;
 
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Submitting…';
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Submitting…';
 
-    // Show success immediately without waiting for API response.
-    document.getElementById('success-banner').classList.add('show');
-    document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const file = fileInput.files[0];
+  let fileBase64 = '', fileMime = '', fileName = '';
+  if (file) { fileName = file.name; fileMime = file.type; fileBase64 = await toBase64(file); }
 
-    const file = fileInput.files[0];
-    let fileBase64 = '', fileMime = '', fileName = '';
-    if (file) { fileName = file.name; fileMime = file.type; fileBase64 = await toBase64(file); }
+  const enterprise = document.getElementById('enterprise').value.trim();
+  const enterpriseId = document.getElementById('enterprise-id').value.trim();
 
-    const enterprise = document.getElementById('enterprise').value.trim();
-    const enterpriseId = document.getElementById('enterprise-id').value.trim();
+  const urlParams = new URLSearchParams(window.location.search);
+  const hiddenParams = {};
+  urlParams.forEach((value, key) => {
+    const visibleParams = ['enterpriseids', 'email', 'mail', 'phone', 'mobile', 'tel', 'gstNumber', 'gst', 'gstin', 'gstnumbers', 'gstnumber', 'gstids', 'address', 'addr', 'location', 'orderAmount', 'amount', 'total', 'orderNote', 'note', 'notes'];
+    if (!visibleParams.includes(key)) {
+      hiddenParams[key] = value;
+    }
+  });
 
-    // Extract all query parameters (including hidden ones)
-    const urlParams = new URLSearchParams(window.location.search);
-    const hiddenParams = {};
-    urlParams.forEach((value, key) => {
-      // Add all query params that aren't already handled by visible fields
-      const visibleParams = ['enterpriseids', 'email', 'mail', 'phone', 'mobile', 'tel', 'gstNumber', 'gst', 'gstin', 'address', 'addr', 'location', 'orderAmount', 'amount', 'total', 'orderNote', 'note', 'notes'];
-      if (!visibleParams.includes(key)) {
-        hiddenParams[key] = value;
-      }
-    });
+  const payload = {
+    timestamp:  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    enterprise: enterprise,
+    enterpriseId: enterpriseId,
+    email:      document.getElementById('email').value.trim(),
+    phone:      document.getElementById('phone').value.trim(),
+    address:    document.getElementById('address').value.trim(),
+    orderAmount: document.getElementById('orderAmount').value.trim(),
+    orderNote:  document.getElementById('orderNote').value.trim(),
+    sourcePayment: document.getElementById('sourcePayment').value.trim(),
+    fileName, fileBase64, fileMime,
+    documentType: documentType,
+    username: urlParams.get('username') || '',
+    leaidID: urlParams.get('LeadID') || '',
+    createdFrom: urlParams.get('Created_from') || '',
+    assignee:urlParams.get('assignee') || '',
+    ...hiddenParams
+  };
 
-    const payload = {
-      timestamp:  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-      enterprise: enterprise,
-      enterpriseId: enterpriseId,
-      email:      document.getElementById('email').value.trim(),
-      phone:      document.getElementById('phone').value.trim(),
-      gstNumber:  document.getElementById('gstNumber').value.trim(),
-      lgnm:       gstMeta.lgnm || '',
-      stcd:       gstMeta.stcd || '',
-      pncd:       gstMeta.pncd || '',
-      address:    document.getElementById('address').value.trim(),
-      orderAmount: document.getElementById('orderAmount').value.trim(),
-      orderNote:  document.getElementById('orderNote').value.trim(),
-      sourcePayment: document.getElementById('sourcePayment').value.trim(),
-      fileName, fileBase64, fileMime,
-      tdsAmount:  document.getElementById('tdsAmount').checked ? document.getElementById('tdsAmountValue').value.trim() : '',
-      gstPendingAmount: document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '',
-      username: urlParams.get('username') || '',
-      leaidID: urlParams.get('LeadID') || '',
-      createdFrom: urlParams.get('Created_from') || '',
-      ...hiddenParams  // Spread hidden query parameters
-    };
+  if (showGstFields) {
+    payload.gstNumber = document.getElementById('gstNumber').value.trim();
+    payload.lgnm = gstMeta.lgnm || '';
+    payload.stcd = gstMeta.stcd || '';
+    payload.pncd = gstMeta.pncd || '';
+    payload.tdsAmount = document.getElementById('tdsAmount').checked ? document.getElementById('tdsAmountValue').value.trim() : '';
+    payload.gstPendingAmount = document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '';
+  }
 
+  try {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
-      console.warn('Apps Script URL not configured. Skipping submit request.');
+      console.warn('Apps Script URL not configured. Simulating success.');
     } else {
-      fetch(APPS_SCRIPT_URL, {
+      await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(err => {
-        console.error('Background submit failed:', err);
       });
     }
 
+    // ✅ SUCCESS: Show success banner and disable form
+    document.getElementById('success-banner').classList.add('show');
+    document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Clear the form after successful submission
+    setTimeout(() => {
+      resetForm();
+    }, 1500);
+    
+    // Permanently disable the submit button with success state
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg> Submitted Successfully';
+    btn.style.background = 'var(--success)';
+    btn.style.cursor = 'not-allowed';
+    
+    // Disable all form inputs
+    disableAllFormInputs();
+    
+  } catch (err) {
+    // ❌ ERROR: Show error banner and re-enable button
+    console.error('Submit failed:', err);
+    document.getElementById('error-banner').classList.add('show');
+    document.getElementById('error-text').textContent = 'Submission failed. Please try again.';
+    document.getElementById('error-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
     btn.disabled = false;
     btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg> Submit ';
   }
-
+}
   function toBase64(file) {
     return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
   }
@@ -887,15 +1309,21 @@
     const sourcePaymentEl = document.getElementById('sourcePayment');
     sourcePaymentEl.value = '';
     sourcePaymentEl.classList.remove('error');
-    ['tdsAmount','gstPendingAmount'].forEach(id => document.getElementById(id).checked = false);
-    document.getElementById('tdsAmountValue').value = '';
-    document.getElementById('gstPendingAmountValue').value = '';
-    document.getElementById('tds-amount-wrapper').style.display = 'none';
-    document.getElementById('gst-amount-wrapper').style.display = 'none';
+    
+    // Only reset GST fields if they're shown
+    if (showGstFields) {
+      ['tdsAmount','gstPendingAmount'].forEach(id => document.getElementById(id).checked = false);
+      document.getElementById('tdsAmountValue').value = '';
+      document.getElementById('gstPendingAmountValue').value = '';
+      document.getElementById('tds-amount-wrapper').style.display = 'none';
+      document.getElementById('gst-amount-wrapper').style.display = 'none';
+    }
+    
     removeFile();
     document.getElementById('enterprise').value = '';
     document.getElementById('enterprise').classList.remove('error');
     document.getElementById('enterprise-dropdown').style.display = 'none';
+    document.getElementById('gst-dropdown').style.display = 'none';
     ['success-banner','error-banner'].forEach(id => document.getElementById(id).classList.remove('show'));
     ['err-enterprise','err-email','err-orderAmount','err-orderNote','err-file'].forEach(id => document.getElementById(id).classList.remove('show'));
     document.getElementById('err-gstNumber')?.classList.remove('show');
