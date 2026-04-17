@@ -434,7 +434,6 @@
     resetBtn.style.cursor = 'not-allowed';
   }
 }
-
   function checkForConfig() {
     if (!API_KEY || API_KEY.includes('YOUR_API_KEY')) {
       document.getElementById('config-banner').style.display = 'flex';
@@ -1206,6 +1205,7 @@
   }
 
   /* Submit */
+
   async function submitForm() {
   document.getElementById('success-banner').classList.remove('show');
   document.getElementById('error-banner').classList.remove('show');
@@ -1259,47 +1259,39 @@
     payload.gstPendingAmount = document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '';
   }
 
-  try {
-    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
-      console.warn('Apps Script URL not configured. Simulating success.');
-    } else {
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    }
+  // ✅ IMMEDIATELY show success (don't wait for API)
+  document.getElementById('success-banner').classList.add('show');
+  document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  // Update button to success state immediately
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg> Submitted Successfully';
+  btn.style.background = 'var(--success)';
+  btn.style.cursor = 'not-allowed';
+  
+  // Disable all form inputs immediately
+  disableAllFormInputs();
+  
+  // Clear the form after 1.5 seconds
+  setTimeout(() => {
+    resetForm();
+  }, 1500);
 
-    // ✅ SUCCESS: Show success banner and disable form
-    document.getElementById('success-banner').classList.add('show');
-    document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    
-    // Clear the form after successful submission
-    setTimeout(() => {
-      resetForm();
-    }, 1500);
-    
-    // Permanently disable the submit button with success state
-    btn.disabled = true;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg> Submitted Successfully';
-    btn.style.background = 'var(--success)';
-    btn.style.cursor = 'not-allowed';
-    
-    // Disable all form inputs
-    disableAllFormInputs();
-    
-  } catch (err) {
-    // ❌ ERROR: Show error banner and re-enable button
-    console.error('Submit failed:', err);
-    document.getElementById('error-banner').classList.add('show');
-    document.getElementById('error-text').textContent = 'Submission failed. Please try again.';
-    document.getElementById('error-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M9 4l5 4-5 4"/></svg> Submit ';
+  // 🔥 Fire-and-forget API call in background (no await, no error handling for user)
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    console.warn('Apps Script URL not configured. Skipping submit request.');
+  } else {
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => {
+      console.error('Background submit failed:', err);
+      // Silent failure - user already sees success
+    });
   }
 }
+  
   function toBase64(file) {
     return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
   }
