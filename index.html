@@ -304,6 +304,22 @@
         <input type="text" id="orderAmount" placeholder="e.g. ₹5,000 or 5000" style="width: 100%; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s;">
         <span class="error-msg" id="err-orderAmount">Please enter order amount</span>
       </div>
+      <label class="check-item" style="flex-direction: column; align-items: flex-start;" id="discount-checkbox">
+          <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
+            <input type="checkbox" id="discountIncluded" onchange="toggleAmountField('discount')">
+            <div class="check-text">
+              <div class="check-title">Discount included</div>
+              <div class="check-desc">This order includes discount percentage amount.</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Discount Field -->
+          <div id="discount-amount-wrapper" style="display:none; width:100%; margin-top:10px; padding-left:28px;">
+            <input type="text" id="discountAmountValue" placeholder="Enter discount percentage or amount"
+              style="width:100%; padding:9px 12px; font-size:14px; font-family:'DM Sans', sans-serif; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text-primary); outline:none;">
+          </div>
+        </label>
+      
 
       <!-- Order Note -->
       <div class="field full" style="margin-bottom: 24px;">
@@ -344,21 +360,7 @@
           </div>
         </label>
         <!-- Checkbox 3: Discount Included -->
-        <label class="check-item" style="flex-direction: column; align-items: flex-start;" id="discount-checkbox">
-          <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
-            <input type="checkbox" id="discountIncluded" onchange="toggleAmountField('discount')">
-            <div class="check-text">
-              <div class="check-title">Discount included</div>
-              <div class="check-desc">This order includes discount percentage amount.</div>
-            </div>
-          </div>
-
-          <!-- Dynamic Discount Field -->
-          <div id="discount-amount-wrapper" style="display:none; width:100%; margin-top:10px; padding-left:28px;">
-            <input type="text" id="discountAmountValue" placeholder="Enter discount percentage or amount"
-              style="width:100%; padding:9px 12px; font-size:14px; font-family:'DM Sans', sans-serif; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text-primary); outline:none;">
-          </div>
-        </label>
+        
       </div>
     </div>
 
