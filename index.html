@@ -343,6 +343,22 @@
             <input type="text" id="gstPendingAmountValue" placeholder="Enter GST pending amount" style="width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); outline: none;">
           </div>
         </label>
+        <!-- Checkbox 3: Discount Included -->
+        <label class="check-item" style="flex-direction: column; align-items: flex-start;" id="discount-checkbox">
+          <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
+            <input type="checkbox" id="discountIncluded" onchange="toggleAmountField('discount')">
+            <div class="check-text">
+              <div class="check-title">Discount included</div>
+              <div class="check-desc">This order includes discount percentage amount.</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Discount Field -->
+          <div id="discount-amount-wrapper" style="display:none; width:100%; margin-top:10px; padding-left:28px;">
+            <input type="text" id="discountAmountValue" placeholder="Enter discount percentage or amount"
+              style="width:100%; padding:9px 12px; font-size:14px; font-family:'DM Sans', sans-serif; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text-primary); outline:none;">
+          </div>
+        </label>
       </div>
     </div>
 
@@ -370,7 +386,7 @@
 
 <script>
   /* ══ CONFIGURATION ══ */
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI5hR6Tn1F93HYRbIGiM6-DvB8-1lDYM4esHej-CYykirSF-XOSnDKqwf5BHg7MFar/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOE9yaGmOjyk0o50Pq8yqrc24lgSWlF8MhmIL6SRZr9C4I0qa1E8sFExEBsDvvyMbS/exec';
   const TELECRM_API_BASE = 'https://next.telecrm.in/api/b1/enterprise';
   const API_KEY = 'Bearerserverapi a7b3c9d2e4f6g8h0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4'; // ⚠️ REPLACE WITH YOUR KEY
   const GST_API_BASE = 'https://sheet.gstincheck.co.in/check/3fea9a1d0853d2aa47e502f5979323fc';
@@ -611,7 +627,7 @@
     } else {
       // Hide GST fields completely for non-GST document types
       if (gstSection) gstSection.style.display = 'none';
-      if (addressSection) addressSection.style.display = 'none';
+      if (addressSection) addressSection.style.display = 'block';
       if (gstPendingCheckbox) gstPendingCheckbox.style.display = 'none';
       if (tdsCheckbox) tdsCheckbox.style.display = 'none';
       
@@ -1060,7 +1076,15 @@
       if (!checkbox.checked) {
         document.getElementById('gstPendingAmountValue').value = '';
       }
+    } else if (type === 'discount') {
+      const checkbox = document.getElementById('discountIncluded');
+      const wrapper = document.getElementById('discount-amount-wrapper');
+      wrapper.style.display = checkbox.checked ? 'block' : 'none';
+      if (!checkbox.checked) {
+        document.getElementById('discountAmountValue').value = '';
+      }
     }
+
   }
 
   /* ── GST Auto-Fetch Functionality ── */
@@ -1207,90 +1231,128 @@
   /* Submit */
 
   async function submitForm() {
-  document.getElementById('success-banner').classList.remove('show');
-  document.getElementById('error-banner').classList.remove('show');
-  if (!validate()) return;
+    document.getElementById('success-banner').classList.remove('show');
+    document.getElementById('error-banner').classList.remove('show');
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Submitting…';
+    if (!validate()) return;
 
-  const file = fileInput.files[0];
-  let fileBase64 = '', fileMime = '', fileName = '';
-  if (file) { fileName = file.name; fileMime = file.type; fileBase64 = await toBase64(file); }
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Submitting…';
 
-  const enterprise = document.getElementById('enterprise').value.trim();
-  const enterpriseId = document.getElementById('enterprise-id').value.trim();
+    const file = fileInput.files[0];
+    let fileBase64 = '', fileMime = '', fileName = '';
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const hiddenParams = {};
-  urlParams.forEach((value, key) => {
-    const visibleParams = ['enterpriseids', 'email', 'mail', 'phone', 'mobile', 'tel', 'gstNumber', 'gst', 'gstin', 'gstnumbers', 'gstnumber', 'gstids', 'address', 'addr', 'location', 'orderAmount', 'amount', 'total', 'orderNote', 'note', 'notes'];
-    if (!visibleParams.includes(key)) {
-      hiddenParams[key] = value;
+    if (file) {
+      fileName = file.name;
+      fileMime = file.type;
+      fileBase64 = await toBase64(file);
     }
-  });
 
-  const payload = {
-    timestamp:  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-    enterprise: enterprise,
-    enterpriseId: enterpriseId,
-    email:      document.getElementById('email').value.trim(),
-    phone:      document.getElementById('phone').value.trim(),
-    address:    document.getElementById('address').value.trim(),
-    orderAmount: document.getElementById('orderAmount').value.trim(),
-    orderNote:  document.getElementById('orderNote').value.trim(),
-    sourcePayment: document.getElementById('sourcePayment').value.trim(),
-    fileName, fileBase64, fileMime,
-    documentType: documentType,
-    username: urlParams.get('username') || '',
-    leaidID: urlParams.get('LeadID') || '',
-    createdFrom: urlParams.get('Created_from') || '',
-    assignee:urlParams.get('assignee') || '',
-    ...hiddenParams
-  };
+    const enterprise = document.getElementById('enterprise').value.trim();
+    const enterpriseId = document.getElementById('enterprise-id').value.trim();
 
-  if (showGstFields) {
-    payload.gstNumber = document.getElementById('gstNumber').value.trim();
-    payload.lgnm = gstMeta.lgnm || '';
-    payload.stcd = gstMeta.stcd || '';
-    payload.pncd = gstMeta.pncd || '';
-    payload.tdsAmount = document.getElementById('tdsAmount').checked ? document.getElementById('tdsAmountValue').value.trim() : '';
-    payload.gstPendingAmount = document.getElementById('gstPendingAmount').checked ? document.getElementById('gstPendingAmountValue').value.trim() : '';
-  }
+    const urlParams = new URLSearchParams(window.location.search);
+    const hiddenParams = {};
 
-  // ✅ IMMEDIATELY show success (don't wait for API)
-  document.getElementById('success-banner').classList.add('show');
-  document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  
-  // Update button to success state immediately
-  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/></svg> Submitted Successfully';
-  btn.style.background = 'var(--success)';
-  btn.style.cursor = 'not-allowed';
-  
-  // Disable all form inputs immediately
-  disableAllFormInputs();
-  
-  // Clear the form after 1.5 seconds
-  setTimeout(() => {
-    resetForm();
-  }, 1500);
+    urlParams.forEach((value, key) => {
+      const visibleParams = [
+        'enterpriseids', 'email', 'mail', 'phone', 'mobile', 'tel',
+        'gstNumber', 'gst', 'gstin', 'gstnumbers', 'gstnumber', 'gstids',
+        'address', 'addr', 'location',
+        'orderAmount', 'amount', 'total',
+        'orderNote', 'note', 'notes'
+      ];
 
-  // 🔥 Fire-and-forget API call in background (no await, no error handling for user)
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
-    console.warn('Apps Script URL not configured. Skipping submit request.');
-  } else {
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(err => {
-      console.error('Background submit failed:', err);
-      // Silent failure - user already sees success
+      if (!visibleParams.includes(key)) {
+        hiddenParams[key] = value;
+      }
     });
+
+    const payload = {
+      timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      enterprise: enterprise,
+      enterpriseId: enterpriseId,
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      orderAmount: document.getElementById('orderAmount').value.trim(),
+      orderNote: document.getElementById('orderNote').value.trim(),
+      sourcePayment: document.getElementById('sourcePayment').value.trim(),
+
+      fileName,
+      fileBase64,
+      fileMime,
+
+      documentType: documentType,
+      username: urlParams.get('username') || '',
+      leaidID: urlParams.get('LeadID') || '',
+      createdFrom: urlParams.get('Created_from') || '',
+      assignee: urlParams.get('assignee') || '',
+
+      ...hiddenParams
+    };
+
+    if (showGstFields) {
+      payload.gstNumber = document.getElementById('gstNumber').value.trim();
+      payload.lgnm = gstMeta.lgnm || '';
+      payload.stcd = gstMeta.stcd || '';
+      payload.pncd = gstMeta.pncd || '';
+
+      payload.tdsAmount =
+        document.getElementById('tdsAmount').checked
+          ? document.getElementById('tdsAmountValue').value.trim()
+          : '';
+
+      payload.gstPendingAmount =
+        document.getElementById('gstPendingAmount').checked
+          ? document.getElementById('gstPendingAmountValue').value.trim()
+          : '';
+    }
+
+    /* ✅ Discount Included */
+    payload.discountAmount =
+      document.getElementById('discountIncluded').checked
+        ? document.getElementById('discountAmountValue').value.trim()
+        : '';
+
+    // ✅ Show success instantly
+    document.getElementById('success-banner').classList.add('show');
+    document.getElementById('success-banner').scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest'
+    });
+
+    btn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.354 5.354l-4 4a.5.5 0 01-.708 0l-2-2a.5.5 0 01.708-.708L7 9.293l3.646-3.647a.5.5 0 01.708.708z"/>
+      </svg>
+      Submitted Successfully
+    `;
+
+    btn.style.background = 'var(--success)';
+    btn.style.cursor = 'not-allowed';
+
+    disableAllFormInputs();
+
+    setTimeout(() => {
+      resetForm();
+    }, 1500);
+
+    // 🔥 Background webhook submit
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+      console.warn('Apps Script URL not configured. Skipping submit request.');
+    } else {
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => {
+        console.error('Background submit failed:', err);
+      });
+    }
   }
-}
   
   function toBase64(file) {
     return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
